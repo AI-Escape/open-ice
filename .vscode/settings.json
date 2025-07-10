@@ -1,0 +1,12 @@
+{
+  "cSpell.words": [
+    "Bajie",
+    "fastapi",
+    "JPCENTER",
+    "realtimefeedback",
+    "selectinload"
+  ],
+  "editor.tabSize": 4,
+  "python.envFile": "${workspaceFolder}/.env.local",
+  "python.analysis.extraPaths": ["./api"]
+}

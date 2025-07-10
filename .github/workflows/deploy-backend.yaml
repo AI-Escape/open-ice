@@ -1,0 +1,60 @@
+name: Deploy Backend
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/deploy-backend.yml"
+
+permissions:
+  contents: read
+
+env:
+  EC2_INSTANCE: ${{ secrets.EC2_INSTANCE }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    environment:
+      name: prod
+      url: ${{ steps.deploy.outputs.vm_url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Create directory on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@$EC2_INSTANCE << 'EOF'
+          sudo rm -rf /home/ec2-user/api
+          sudo mkdir -p /home/ec2-user/api
+          sudo chown ec2-user:ec2-user /home/ec2-user/api
+          EOF
+
+      - name: Copy files to EC2
+        run: |
+          scp -o StrictHostKeyChecking=no -r * ec2-user@$EC2_INSTANCE:/home/ec2-user/api/
+
+      - name: Deploy Docker Compose
+        run: |
+          ssh -o StrictHostKeyChecking=no ec2-user@$EC2_INSTANCE << 'EOF'
+          sudo yum update -y
+          sudo amazon-linux-extras install docker -y
+          sudo service docker start
+          sudo usermod -aG docker ec2-user
+          newgrp docker
+          sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          sudo systemctl restart docker
+          cd /home/ec2-user/api/
+          echo "${{ secrets.DOT_ENV }}" > .env
+          docker-compose down
+          docker-compose up -d --build
+          EOF

@@ -1,0 +1,104 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+
+body {
+  /* background: #101c2c; */
+  overflow-x: hidden;
+}
+
+div:has(nav[aria-label="Side navigation"]) {
+  z-index: 800 !important;
+}
+
+.top-navigation {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 2000;
+}
+
+.highlight {
+  background-color: #b2f6ff; /* Light khaki color for a subtle highlight */
+  color: #000000; /* Dark text color for contrast */
+  padding: 0 2px; /* Small padding for better readability */
+  border-radius: 2px; /* Rounded corners for a softer look */
+}
+
+iframe#webpack-dev-server-client-overlay {
+  display: none !important;
+}
+
+
+.turn-container {
+  min-height: 415px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.turn-exit {
+  opacity: 0;
+  transition: opacity 1s;
+}
+
+.turn-exit-active {
+  opacity: 0;
+}
+
+.turn-enter {
+  opacity: 0;
+}
+
+.turn-enter-overlay {
+  position: absolute;
+  padding-right: 20px;
+}
+
+.turn-enter-active {
+  opacity: 1;
+  transition: opacity 1s;
+  transition-delay: 1s;
+}
+
+.turn-cancel {
+  display: none;
+}
+
+
+.escape-chat-box {
+  /* place at bottom of container */
+  /* position: absolute;
+  width: 100%;
+  bottom: 0; */
+  margin: 0;
+  padding: 0;
+}
+
+.chat-container {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chat-content {
+  padding: 10px;
+  overflow-y: auto;
+  height: 90%;
+}
+
+
+.chat-turn-user {
+  /* background-color: #d6d6d6 !important; */
+  border-radius: 0px;
+  border: unset !important;
+}
+
+
+.chat-turn-assistant-text {
+  /* background-color: #494949 !important; */
+  border-radius: 0px;
+  border: unset !important;
+}

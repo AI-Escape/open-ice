@@ -1,0 +1,17 @@
+{
+  "short_name": "OpenICE",
+  "name": "OpenICE",
+  "icons": [
+    {
+      "src": "https://cdn.aiescape.io/open-ice/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "start_url": ".",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#17273c",
+  "description": "OpenICE",
+  "background_color": "#101c2c"
+}

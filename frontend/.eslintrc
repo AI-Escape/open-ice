@@ -1,0 +1,64 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "react-app",
+    "prettier"
+  ],
+  "plugins": [
+    "react-compiler",
+    "@typescript-eslint",
+    "react-hooks"
+  ],
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "rules": {
+    "react-compiler/react-compiler": "warn", // enable react-compiler rule manually
+    "@typescript-eslint/consistent-type-definitions": [
+      "warn",
+      "type"
+    ],
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/explicit-member-accessibility": "off",
+    "@typescript-eslint/no-angle-bracket-type-assertion": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/no-use-before-define": [
+      "warn",
+      {
+        "functions": false,
+        "classes": false,
+        "variables": true
+      }
+    ],
+    "import/no-extraneous-dependencies": "warn",
+    "import/order": "off",
+    "no-case-declarations": "warn",
+    "no-console": "off",
+    "no-debugger": "warn",
+    "no-else-return": "warn",
+    "no-param-reassign": "warn",
+    "no-undef": "off",
+    "no-unused-vars": "off",
+    "no-var": "warn",
+    "object-shorthand": "warn",
+    "padding-line-between-statements": "off",
+    "prefer-const": "warn",
+    "react/jsx-boolean-value": "warn",
+    "react/jsx-curly-brace-presence": "warn",
+    "react/jsx-key": "warn",
+    "react/jsx-sort-props": "off",
+    "react/no-array-index-key": "warn",
+    "react/prefer-stateless-function": "warn",
+    "react/self-closing-comp": "warn",
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "off",
+    "yoda": "warn"
+  }
+}

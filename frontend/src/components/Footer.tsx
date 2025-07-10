@@ -25,7 +25,7 @@ export default function Footer() {
         <Box variant="p" textAlign="center" color="text-status-inactive" fontSize="body-s">
           All code is open-source and available on{' '}
           <Link
-            href="https://github.com/orgs/AI-Escape/repositories"
+            href="https://github.com/AI-Escape/open-ice"
             target="_blank"
             rel="noopener noreferrer"
             fontSize="inherit"
@@ -34,7 +34,7 @@ export default function Footer() {
           </Link>
           . Licensed under the{' '}
           <Link
-            href="https://github.com/AI-Escape/open-ice-web/blob/main/LICENSE"
+            href="https://github.com/AI-Escape/open-ice/blob/main/LICENSE"
             target="_blank"
             rel="noopener noreferrer"
             fontSize="inherit"

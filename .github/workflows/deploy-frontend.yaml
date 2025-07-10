@@ -4,7 +4,7 @@ on:
     branches: [main]
     paths:
       - "frontend/**"
-      - ".github/workflows/deploy-frontend.yml"
+      - ".github/workflows/deploy-frontend.yaml"
 
 env:
   S3_BUCKET: ${{ secrets.S3_BUCKET }}

@@ -11,7 +11,6 @@ import useCurrentStayLength from '../../common/hooks/stay';
 import { LoadingOrError } from '../Loading';
 import { AverageDailyPopulationStats } from './AverageDailyPopulationStats';
 import { AverageStayLengthStats } from './AverageStayLengthStats';
-import { AverageDailyPopulationPieChart } from '../graphs/AverageDailyPopulationPieChart';
 import useCurrentRelease from '../../common/hooks/release';
 import useCurrentProcessingDisposition from '../../common/hooks/disposition';
 import { DetaineeCriminalityStats } from './DetaineeCriminalityStats';
@@ -20,6 +19,9 @@ import { BookOutReleaseStats } from './BookOutReleaseStats';
 import useCurrentBooking from '../../common/hooks/booking';
 import { BookInStats } from './BookInStats';
 import { EconomicImpactStats } from './EconomicImpactStats';
+import useCurrentFacilities from '../../common/hooks/facilities';
+import { FacilityMap } from '../maps/FacilityMap';
+import { FacilityStats } from './FacilityStats';
 
 export default function StatsHeader() {
   const popQuery = useCurrentPopulation();
@@ -27,6 +29,8 @@ export default function StatsHeader() {
   const releaseQuery = useCurrentRelease();
   const bookingQuery = useCurrentBooking();
   const dispositionQuery = useCurrentProcessingDisposition();
+  const facilitiesQuery = useCurrentFacilities();
+
 
   const loading =
     popQuery.isLoading ||
@@ -38,21 +42,24 @@ export default function StatsHeader() {
     dispositionQuery.isLoading ||
     dispositionQuery.isPending ||
     bookingQuery.isLoading ||
-    bookingQuery.isPending;
+    bookingQuery.isPending ||
+    facilitiesQuery.isLoading ||
+    facilitiesQuery.isPending;
   const error =
     popQuery.error ||
     stayQuery.error ||
     releaseQuery.error ||
     dispositionQuery.error ||
     bookingQuery.error ||
-    bookingQuery.error;
+    bookingQuery.error ||
+    facilitiesQuery.error;
   const compareMonths = 6;
 
   return (
     <SpaceBetween direction="vertical" size="m">
       {loading ||
       error ||
-      !(popQuery.data || stayQuery.data || releaseQuery.data || dispositionQuery.data) ? (
+      !(popQuery.data || stayQuery.data || releaseQuery.data || dispositionQuery.data || facilitiesQuery.data) ? (
         error ? (
           <LoadingOrError
             loading={loading}
@@ -64,6 +71,7 @@ export default function StatsHeader() {
               dispositionQuery.refetch();
               bookingQuery.refetch();
               dispositionQuery.refetch();
+              facilitiesQuery.refetch();
             }}
           />
         ) : (
@@ -77,6 +85,7 @@ export default function StatsHeader() {
             { colspan: { default: 12, s: 12 } },
             { colspan: { default: 12, s: 6 } },
             { colspan: { default: 12, s: 6 } },
+            { colspan: { default: 12, s: 12 } },
             { colspan: { default: 12, s: 12 } },
           ]}
         >
@@ -94,6 +103,7 @@ export default function StatsHeader() {
           />
           <ProcessingDispositionStats data={dispositionQuery.data} />
           <BookOutReleaseStats data={releaseQuery.data} compareMonths={compareMonths} />
+          <FacilityStats data={facilitiesQuery.data} />
         </Grid>
       )}
     </SpaceBetween>

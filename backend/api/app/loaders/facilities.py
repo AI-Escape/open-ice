@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import math
 from pandas import DataFrame
 from sqlmodel import SQLModel
 
@@ -20,7 +21,11 @@ def _to_float(value: str | int | float | None):
     if value in (None, ""):
         return None
     try:
-        return float(value)
+        val = float(value)
+        # check for nan
+        if math.isnan(val):
+            return None
+        return val
     except ValueError:
         return None
 

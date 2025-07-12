@@ -28,6 +28,7 @@ export default function View() {
         gridDefinition={[
           { colspan: { default: 12, xs: 12 } },
           { colspan: { default: 12, xs: 12 } },
+          { colspan: { default: 12, xs: 12 } },
           { colspan: { default: 12, xs: 6 } },
           { colspan: { default: 12, xs: 6 } },
           { colspan: { default: 12, xs: 6 } },

@@ -4,9 +4,6 @@ import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persi
 import { BrowserRouter, useLocation } from 'react-router';
 import enMessages from '@cloudscape-design/components/i18n/messages/all.en';
 import { I18nProvider } from '@cloudscape-design/components/i18n';
-import { QueryParamProvider } from 'use-query-params';
-import { ReactRouter6Adapter } from 'use-query-params/adapters/react-router-6';
-import queryString from 'query-string';
 import { PostHogProvider } from 'posthog-js/react';
 import posthog from 'posthog-js';
 import { ErrorBoundary } from 'react-error-boundary';
@@ -130,18 +127,9 @@ function App() {
   // }, []);
   return (
     <BrowserRouter>
-      <QueryParamProvider
-        adapter={ReactRouter6Adapter}
-        options={{
-          searchStringToObject: queryString.parse,
-          objectToSearchString: queryString.stringify,
-          removeDefaultsFromUrl: true,
-        }}
-      >
-        <I18nProvider locale="en" messages={[enMessages]}>
-          <AppWithUserContext />
-        </I18nProvider>
-      </QueryParamProvider>
+      <I18nProvider locale="en" messages={[enMessages]}>
+        <AppWithUserContext />
+      </I18nProvider>
     </BrowserRouter>
   );
 }

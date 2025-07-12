@@ -14,6 +14,7 @@ from app.routers import (
     disposition,
     booking,
     chat,
+    facilities,
 )
 from app.limits import limiter
 from app.utils.lifespan import lifespan
@@ -52,6 +53,7 @@ app.include_router(release.router)
 app.include_router(disposition.router)
 app.include_router(booking.router)
 app.include_router(chat.router)
+app.include_router(facilities.router)
 
 app.add_middleware(
     CORSMiddleware,

@@ -9,6 +9,7 @@ class ProcessingDispositionLoader(ICEDataLoader):
         super().__init__(
             name="processing-disposition",
             title=f"ICE Currently Detained by Processing Disposition and Detention Facility Type: {fy}",
+            sheet_name=f"Detention FY{fy[-2:]}",
         )
 
     def load(self, df: DataFrame, report: DetentionStatsReport) -> list[SQLModel]:

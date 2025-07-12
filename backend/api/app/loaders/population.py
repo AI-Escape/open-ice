@@ -9,6 +9,7 @@ class AverageDailyPopulationLoader(ICEDataLoader):
         super().__init__(
             name="average-daily-population",
             title=f"ICE Average Daily Population by Arresting Agency, Month and Criminality: {fy}",
+            sheet_name=f"Detention FY{fy[-2:]}",
         )
 
     def load(self, df: DataFrame, report: DetentionStatsReport) -> list[SQLModel]:

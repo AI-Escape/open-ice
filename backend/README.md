@@ -66,7 +66,7 @@ docker-compose exec web alembic upgrade head
 docker exec -it open-ice-api-web-1 sh
 
 # Run the data import script
-python3.13 -m app.scripts.import_data
+docker-compose exec web python3.13 -m app.scripts.import_data --file_path app/files/data/FY25_detentionStats07072025.xlsx
 ```
 
 ## Development

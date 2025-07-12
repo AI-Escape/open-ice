@@ -9,6 +9,7 @@ class AverageStayLengthLoader(ICEDataLoader):
         super().__init__(
             name="average-stay-length",
             title=f"ICE Average Length of Stay by Arresting Agency, Month and Criminality: {fy}",
+            sheet_name=f"Detention FY{fy[-2:]}",
         )
 
     def load(self, df: DataFrame, report: DetentionStatsReport) -> list[SQLModel]:

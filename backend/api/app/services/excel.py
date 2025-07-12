@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from openpyxl import load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.utils.cell import column_index_from_string
@@ -44,8 +44,9 @@ def extract_tables(
     file_path: str | Path,
     sheet_name: str,
     *,
-    max_width: str | int = "Z",
+    max_width: str | int = "AZ",
     debug: bool = False,
+    sheet_skip_rows: Optional[list[int]] = None,
 ) -> Dict[str, List[Dict[str, Any]]]:
     """
     Row-by-row extractor that respects merged header cells.
@@ -67,6 +68,10 @@ def extract_tables(
 
     wb = load_workbook(file_path, data_only=True)
     ws = wb[sheet_name]
+    if sheet_skip_rows:
+        # delete these rows, biggest to smallest to avoid shifting
+        for row in reversed(sheet_skip_rows):
+            ws.delete_rows(row)
     max_row = ws.max_row
     merged_lookup = _merged_map(ws)
 

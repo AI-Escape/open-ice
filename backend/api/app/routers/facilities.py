@@ -8,8 +8,8 @@ from app.limits import limiter
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.models import (
-    BookOutRelease,
-    BookOutReleaseRead,
+    Facility,
+    FacilityRead,
     DetentionStatsReport,
 )
 from app.utils.cache import cache_headers
@@ -17,8 +17,8 @@ from app.services.reports import current_report_subquery
 
 
 router = APIRouter(
-    prefix="/release",
-    tags=["release"],
+    prefix="/facilities",
+    tags=["facilities"],
     responses={404: {"description": "Not found"}},
 )
 
@@ -29,22 +29,17 @@ async def current(
     request: Request,
     response: Response,
     session: AsyncSession = Depends(get_session),
-) -> list[BookOutReleaseRead]:
+) -> list[FacilityRead]:
     sub_query = current_report_subquery()
     query = (
-        select(BookOutRelease)
+        select(Facility)
         .join(
             DetentionStatsReport,
-            BookOutRelease.report_id == DetentionStatsReport.id,
+            Facility.report_id == DetentionStatsReport.id,
         )
         .join(
             sub_query,
-            BookOutRelease.report_id == sub_query.c.id,
-        )
-        .where(
-            BookOutRelease.incomplete == False,
-            BookOutRelease.started == True,
-            BookOutRelease.range == "month",
+            Facility.report_id == sub_query.c.id,
         )
     )
     results = await session.exec(query)

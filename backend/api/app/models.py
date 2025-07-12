@@ -89,6 +89,9 @@ class DetentionStatsReport(BaseDetentionStatsReport, table=True):
     processing_dispositions: list["ProcessingDisposition"] = Relationship(
         back_populates="report",
     )
+    facilities: list["Facility"] = Relationship(
+        back_populates="report",
+    )
 
 
 class BaseAverageDailyPopulation(SQLModel):
@@ -185,6 +188,48 @@ class ProcessingDisposition(BaseProcessingDisposition, table=True):
     )
 
 
+class BaseFacility(SQLModel):
+    name: str = Field(index=True)
+    address: str = Field(index=True)
+    city: str = Field(index=True)
+    state: str = Field(index=True)
+    zip_code: str = Field(index=True)
+    aor: str = Field(index=True)
+    type_detailed: str = Field(index=True)
+    gender: Optional[str] = Field(default=None, index=True)
+    # TODO need to re-name this column
+    fy25_alos: float = Field(index=True)
+    level_a: Optional[float] = Field(default=None, index=True)
+    level_b: Optional[float] = Field(default=None, index=True)
+    level_c: Optional[float] = Field(default=None, index=True)
+    level_d: Optional[float] = Field(default=None, index=True)
+    male_crim: Optional[float] = Field(default=None, index=True)
+    male_non_crim: Optional[float] = Field(default=None, index=True)
+    female_crim: Optional[float] = Field(default=None, index=True)
+    female_non_crim: Optional[float] = Field(default=None, index=True)
+    ice_threat_level_1: Optional[float] = Field(default=None, index=True)
+    ice_threat_level_2: Optional[float] = Field(default=None, index=True)
+    ice_threat_level_3: Optional[float] = Field(default=None, index=True)
+    no_ice_threat_level: Optional[float] = Field(default=None, index=True)
+    mandatory: Optional[float] = Field(default=None, index=True)
+    guaranteed_minimum: Optional[float] = Field(default=None, index=True)
+    last_inspection_type: Optional[str] = Field(default=None, index=True)
+    last_inspection_end_date: Optional[datetime] = Field(default=None, index=True)
+    # TODO need to re-name this column
+    pending_fy25_inspection: Optional[str] = Field(default=None, index=True)
+    last_inspection_standard: Optional[str] = Field(default=None, index=True)
+    last_final_rating: Optional[str] = Field(default=None, index=True)
+
+
+class Facility(BaseFacility, table=True):
+    __tablename__ = "facilities"
+    id: Optional[int] = Field(primary_key=True)
+    uuid: Optional[UUID] = uuid()
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+    report_id: int = Field(foreign_key="detention_stats_reports.id", index=True)
+    report: DetentionStatsReport = Relationship(back_populates="facilities")
+
+
 class AverageDailyPopulationRead(BaseAverageDailyPopulation):
     pass
 
@@ -202,6 +247,10 @@ class ProcessingDispositionRead(BaseProcessingDisposition):
 
 
 class BookInRead(BaseBookIn):
+    pass
+
+
+class FacilityRead(BaseFacility):
     pass
 
 

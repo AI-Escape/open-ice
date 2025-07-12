@@ -9,6 +9,7 @@ class BookInLoader(ICEDataLoader):
         super().__init__(
             name="book-in",
             title=f"ICE Initial Book-Ins by Arresting Agency and Month: {fy}",
+            sheet_name=f"Detention FY{fy[-2:]}",
         )
 
     def load(self, df: DataFrame, report: DetentionStatsReport) -> list[SQLModel]:

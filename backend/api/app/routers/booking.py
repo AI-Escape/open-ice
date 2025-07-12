@@ -14,6 +14,7 @@ from app.models import (
     DetentionStatsReport,
 )
 from app.utils.cache import cache_headers
+from app.services.reports import current_report_subquery
 
 
 router = APIRouter(
@@ -30,16 +31,7 @@ async def current(
     response: Response,
     session: AsyncSession = Depends(get_session),
 ) -> list[BookInRead]:
-    sub_query = (
-        select(
-            DetentionStatsReport.id,
-            func.max(DetentionStatsReport.publication_date).label(
-                "max_publication_date"
-            ),
-        )
-        .group_by(DetentionStatsReport.id)
-        .subquery()
-    )
+    sub_query = current_report_subquery()
     query = (
         select(BookIn)
         .join(

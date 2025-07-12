@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import logging
+from typing import Optional
 from pandas import DataFrame
 from sqlmodel import SQLModel
 from datetime import datetime, timedelta
@@ -9,11 +10,19 @@ from app.models import DetentionStatsReport
 
 
 class ICEDataLoader(ABC):
-    def __init__(self, name: str, title: str):
+    def __init__(
+        self,
+        name: str,
+        title: str,
+        sheet_name: str,
+        sheet_skip_rows: Optional[list[int]] = None,
+    ):
         self.name = name
         self.title = title
         self.logger = logging.getLogger(f"openice.loaders.{name}")
         self.logger.setLevel(logging.INFO)
+        self.sheet_name = sheet_name
+        self.sheet_skip_rows = sheet_skip_rows
 
     @abstractmethod
     def load(self, df: DataFrame, report: DetentionStatsReport) -> list[SQLModel]:

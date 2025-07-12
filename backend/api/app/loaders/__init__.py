@@ -4,6 +4,7 @@ from app.loaders.disposition import ProcessingDispositionLoader
 from app.loaders.population import AverageDailyPopulationLoader
 from app.loaders.stay import AverageStayLengthLoader
 from app.loaders.release import BookOutReleaseLoader
+from app.loaders.facilities import FacilitiesLoader
 
 
 def get_loaders(fy: str) -> list[ICEDataLoader]:
@@ -13,4 +14,5 @@ def get_loaders(fy: str) -> list[ICEDataLoader]:
         BookInLoader(fy),
         BookOutReleaseLoader(fy),
         ProcessingDispositionLoader(fy),
+        FacilitiesLoader(fy),
     ]

@@ -13,7 +13,7 @@ import {
   Disposition,
   DISPOSITION_DESCRIPTIONS,
   DISPOSITION_ORDER,
-  Facility,
+  FacilityType,
   FACILITY_DESCRIPTIONS,
   FACILITY_DESCRIPTIONS_DETAILS,
   FACILITY_ORDER,
@@ -29,7 +29,7 @@ export function ProcessingDescriptionBarChart(props: ProcessingDescriptionBarCha
   const { data } = props;
 
   const groupedData = useMemo(() => {
-    const grouped = {} as Record<Facility, Record<Disposition, number>>;
+    const grouped = {} as Record<FacilityType, Record<Disposition, number>>;
     for (const item of data) {
       if (!grouped[item.facility]) {
         grouped[item.facility] = {} as Record<Disposition, number>;
@@ -46,17 +46,17 @@ export function ProcessingDescriptionBarChart(props: ProcessingDescriptionBarCha
     const items = Object.keys(groupedData)
       .filter((key) => key !== 'Total')
       .map((key) => {
-        const dData = Object.keys(groupedData[key as Facility])
+        const dData = Object.keys(groupedData[key as FacilityType])
           .filter((key) => key !== 'Total')
           .map((disposition) => ({
             x: disposition,
-            y: groupedData[key as Facility][disposition as Disposition],
+            y: groupedData[key as FacilityType][disposition as Disposition],
           }));
         dData.sort((a, b) => {
           return b.y - a.y;
         });
         return {
-          title: FACILITY_DESCRIPTIONS[key as Facility],
+          title: FACILITY_DESCRIPTIONS[key as FacilityType],
           data: dData,
           type: 'bar',
           valueFormatter: (y: number) => {
@@ -78,12 +78,12 @@ export function ProcessingDescriptionBarChart(props: ProcessingDescriptionBarCha
     const data = {} as Record<string, number>;
     for (const key of Object.keys(groupedData)) {
       if (key === 'Total') continue;
-      if (!visibleSeries.includes(FACILITY_DESCRIPTIONS[key as Facility])) continue;
-      for (const item of Object.keys(groupedData[key as Facility])) {
+      if (!visibleSeries.includes(FACILITY_DESCRIPTIONS[key as FacilityType])) continue;
+      for (const item of Object.keys(groupedData[key as FacilityType])) {
         if (item === 'Total') continue;
         const dist = item as Disposition;
         const dkey = dist;
-        data[dkey] = (data[dkey] || 0) + groupedData[key as Facility][dist];
+        data[dkey] = (data[dkey] || 0) + groupedData[key as FacilityType][dist];
       }
     }
     return data;
@@ -121,7 +121,7 @@ export function ProcessingDescriptionBarChart(props: ProcessingDescriptionBarCha
                 {series.title}
               </Box>
               <Box variant="span" fontSize="body-s" color="text-body-secondary">
-                {FACILITY_DESCRIPTIONS_DETAILS[series.title as Facility]}
+                {FACILITY_DESCRIPTIONS_DETAILS[series.title as FacilityType]}
               </Box>
             </div>
           ),

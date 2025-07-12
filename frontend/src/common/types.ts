@@ -217,7 +217,7 @@ export type Disposition =
   | 'Other'
   | 'Total';
 
-export const FACILITY_DESCRIPTIONS: Record<Facility, string> = {
+export const FACILITY_DESCRIPTIONS: Record<FacilityType, string> = {
   FSC: 'Family Unit Individual',
   Adult: 'Adult Individual',
   Total: 'Total',
@@ -243,10 +243,41 @@ export const DISPOSITION_DESCRIPTIONS: Record<Disposition, string> = {
   Total: 'All processing dispositions combined (FSC + Adult)',
 };
 
-export type Facility = 'FSC' | 'Adult' | 'Total';
+export type FacilityType = 'FSC' | 'Adult' | 'Total';
 
 export type ProcessingDisposition = {
   disposition: Disposition;
-  facility: Facility;
+  facility: FacilityType;
   population: number;
+};
+
+export type Facility = {
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip_code: string;
+  aor: string;
+  type_detailed: FacilityType;
+  gender?: string;
+  fy25_alos: number;
+  level_a?: number;
+  level_b?: number;
+  level_c?: number;
+  level_d?: number;
+  male_crim?: number;
+  male_non_crim?: number;
+  female_crim?: number;
+  female_non_crim?: number;
+  ice_threat_level_1?: number;
+  ice_threat_level_2?: number;
+  ice_threat_level_3?: number;
+  no_ice_threat_level?: number;
+  mandatory?: number;
+  guaranteed_minimum?: number;
+  last_inspection_type?: string;
+  last_inspection_end_date?: string;
+  pending_fy25_inspection?: string;
+  last_inspection_standard?: string;
+  last_final_rating?: string;
 };

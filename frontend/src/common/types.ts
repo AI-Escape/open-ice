@@ -137,6 +137,36 @@ export const BOOK_OUT_REASON_ORDER: BookOutReason[] = [
   'Release to Remove',
 ];
 
+export type ThreatLevel = 'Level 1' | 'Level 2' | 'Level 3' | 'No Threat' | 'Total';
+
+export const THREAT_LEVEL_COLORS: Record<ThreatLevel, string> = {
+  'Level 3': '#688ae8', // blue
+  'Level 2': '#f0a46e', // orange
+  'Level 1': '#d42520', // red
+  'No Threat': '#2ea597', // green
+  Total: '#2ea597',
+};
+
+export const THREAT_LEVEL_DESCRIPTIONS: Record<ThreatLevel, string> = {
+  'Level 1':
+    'Level 1 – Highest priority: convicted of an aggravated felony or two + serious felonies; ICE treats as the greatest public-safety threat',
+  'Level 2':
+    'Level 2 – Moderate priority: convicted of one felony or three + misdemeanors; ICE considers a significant enforcement target',
+  'Level 3':
+    'Level 3 – Lower priority: at most a single misdemeanor or similarly minor offense; still removable but lowest criminal-threat tier',
+  'No Threat':
+    'No Threat – No criminal conviction on record; civil immigration violator only (ICE often still issues a civil warrant in these cases)',
+  Total: 'Total',
+};
+
+export const THREAT_LEVEL_ORDER: ThreatLevel[] = [
+  'No Threat',
+  'Level 3',
+  'Level 2',
+  'Level 1',
+  'Total',
+];
+
 export const CRIMINALITY_COLORS: Record<Criminality, string> = {
   // red
   'Convicted Criminal': '#d42520',

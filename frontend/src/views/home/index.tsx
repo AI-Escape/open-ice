@@ -13,7 +13,6 @@ import { useNavigate } from 'react-router';
 import useWindowDimensions from '../../common/window';
 import StatsHeader from '../../components/stats/StatsHeader';
 import ChatWidget from '../../components/chat/ChatWidget';
-import FacilityMap from '../../components/maps/FacilityMap';
 
 export default function View() {
   const navigate = useNavigate();
@@ -37,7 +36,6 @@ export default function View() {
         ]}
       >
         <StatsHeader />
-        <FacilityMap />
         {/* <SpaceBetween size="m">
           <div className="w-full m-auto max-w-3xl">
             <ProgressBar

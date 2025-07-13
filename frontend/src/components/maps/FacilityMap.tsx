@@ -39,26 +39,15 @@ function interpolateColor(value: number, max: number): string {
   const ratio = Math.max(0, Math.min(1, value / max));
   const stops = [
     [150, 202, 255], // light blue
-    [80, 200, 120], // green
     [255, 165, 0], // orange
     [139, 0, 0], // dark red
   ];
-  let start;
-  let end;
-  let t;
-  if (ratio <= 1 / 3) {
-    start = stops[0];
-    end = stops[1];
-    t = ratio / (1 / 3);
-  } else if (ratio <= 2 / 3) {
-    start = stops[1];
-    end = stops[2];
-    t = (ratio - 1 / 3) / (1 / 3);
-  } else {
-    start = stops[2];
-    end = stops[3];
-    t = (ratio - 2 / 3) / (1 / 3);
-  }
+  const segments = stops.length - 1;
+  const scaled = ratio * segments;
+  const index = Math.min(Math.floor(scaled), stops.length - 2);
+  const t = scaled - index;
+  const start = stops[index];
+  const end = stops[index + 1];
   const r = start[0] + (end[0] - start[0]) * t;
   const g = start[1] + (end[1] - start[1]) * t;
   const b = start[2] + (end[2] - start[2]) * t;

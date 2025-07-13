@@ -188,38 +188,40 @@ const FacilityPopup = React.memo(function FacilityPopup({
           }}
         />
       )}
-      <SpaceBetween direction="vertical" size="xs">
-        <Header variant="h2">
-          {getStateName(popupState) ?? popupState}
-          <Box variant="span" fontSize="body-m" color="text-body-secondary">
-            {' | '}
-            {stateData?.avgStay?.toLocaleString(undefined, {
-              maximumFractionDigits: 1,
-              minimumFractionDigits: 1,
-            }) ?? '0.0'}{' '}
-            days average stay
-          </Box>
-        </Header>
-        {stateData && <FacilityList facilities={stateData.facilities} />}
-        {stateData && stateData.facilities.length > 0 && stateData.totalPop > 0 && (
-          <ThreatPieChart data={stateData.facilities} />
-        )}
-        <hr style={{ width: '100%', borderRadius: '1px' }} />
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-          <span>Total</span>
-          <span>
-            {(stateData?.totalPop ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}{' '}
-            people
-          </span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          <Box variant="span" fontSize="body-s" color="text-body-secondary">
-            The average daily population is the average number of people held in custody each day.
-            Detainees are overwhelmingly non-criminal, and have not necessarily been convicted of
-            any immigration violations while in custody.
-          </Box>
-        </div>
-      </SpaceBetween>
+      <div style={{ padding: '8px' }}>
+        <SpaceBetween direction="vertical" size="xs">
+          <Header variant="h2">
+            {getStateName(popupState) ?? popupState}
+            <Box variant="span" fontSize="body-m" color="text-body-secondary">
+              {' | '}
+              {stateData?.avgStay?.toLocaleString(undefined, {
+                maximumFractionDigits: 1,
+                minimumFractionDigits: 1,
+              }) ?? '0.0'}{' '}
+              days average stay
+            </Box>
+          </Header>
+          {stateData && <FacilityList facilities={stateData.facilities} />}
+          {stateData && stateData.facilities.length > 0 && stateData.totalPop > 0 && (
+            <ThreatPieChart data={stateData.facilities} />
+          )}
+          <hr style={{ width: '100%', borderRadius: '1px' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+            <span>Total</span>
+            <span>
+              {(stateData?.totalPop ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}{' '}
+              people
+            </span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            <Box variant="span" fontSize="body-s" color="text-body-secondary">
+              The average daily population is the average number of people held in custody each day.
+              Detainees are overwhelmingly non-criminal, and have not necessarily been convicted of
+              any immigration violations while in custody.
+            </Box>
+          </div>
+        </SpaceBetween>
+      </div>
     </div>
   );
 });

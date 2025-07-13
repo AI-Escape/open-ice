@@ -188,7 +188,7 @@ const FacilityPopup = React.memo(function FacilityPopup({
           }}
         />
       )}
-      <div style={{ padding: '8px' }}>
+      <div style={{ padding: '16px' }}>
         <SpaceBetween direction="vertical" size="xs">
           <Header variant="h2">
             {getStateName(popupState) ?? popupState}

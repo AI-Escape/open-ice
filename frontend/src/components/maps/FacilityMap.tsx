@@ -326,6 +326,7 @@ const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
                 },
               };
             }
+            
             return (
               <Geography
                 key={geo.rsmKey}

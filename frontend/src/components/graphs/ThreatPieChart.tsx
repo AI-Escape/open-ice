@@ -1,6 +1,13 @@
-import { Box, PieChart } from "@cloudscape-design/components";
-import { CRIMINALITY_DESCRIPTIONS, Facility, THREAT_LEVEL_COLORS, THREAT_LEVEL_DESCRIPTIONS, THREAT_LEVEL_ORDER, ThreatLevel } from "../../common/types";
-import { useMemo, useState } from "react";
+import { Box, PieChart } from '@cloudscape-design/components';
+import {
+  CRIMINALITY_DESCRIPTIONS,
+  Facility,
+  THREAT_LEVEL_COLORS,
+  THREAT_LEVEL_DESCRIPTIONS,
+  THREAT_LEVEL_ORDER,
+  ThreatLevel,
+} from '../../common/types';
+import { useMemo, useState } from 'react';
 
 export type ThreatPieChartProps = {
   data: Facility[];
@@ -26,14 +33,20 @@ export const ThreatPieChart = (props: ThreatPieChartProps) => {
   }, [props.data]);
 
   const data = useMemo(() => {
-    return Object.entries(grouped).filter(([key, value]) => key !== 'Total').map(([key, value]) => ({
-      title: key,
-      value,
-      color: THREAT_LEVEL_COLORS[key as ThreatLevel],
-    })).sort((a, b) => THREAT_LEVEL_ORDER.indexOf(a.title as ThreatLevel) - THREAT_LEVEL_ORDER.indexOf(b.title as ThreatLevel));
+    return Object.entries(grouped)
+      .filter(([key, value]) => key !== 'Total')
+      .map(([key, value]) => ({
+        title: key,
+        value,
+        color: THREAT_LEVEL_COLORS[key as ThreatLevel],
+      }))
+      .sort(
+        (a, b) =>
+          THREAT_LEVEL_ORDER.indexOf(a.title as ThreatLevel) -
+          THREAT_LEVEL_ORDER.indexOf(b.title as ThreatLevel),
+      );
   }, [grouped]);
 
-  
   const [visibleSegments, setVisibleSegments] = useState<string[]>(
     data.map((datum) => datum.title),
   );
@@ -44,13 +57,12 @@ export const ThreatPieChart = (props: ThreatPieChartProps) => {
       .reduce((acc, datum) => acc + datum.value, 0);
   }, [data, visibleSegments]);
 
-
   return (
     <PieChart
       variant="pie"
       data={data}
       fitHeight
-      size="large"
+      size="medium"
       onFilterChange={({ detail }) => {
         const visibleSegments = detail.visibleSegments;
         setVisibleSegments(visibleSegments.map((segment) => segment.title));
@@ -59,7 +71,10 @@ export const ThreatPieChart = (props: ThreatPieChartProps) => {
         return [
           {
             key: 'Avg. Daily Population',
-            value: value.toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 1 }),
+            value: value.toLocaleString(undefined, {
+              maximumFractionDigits: 1,
+              minimumFractionDigits: 1,
+            }),
           },
           {
             key: 'Percentage',

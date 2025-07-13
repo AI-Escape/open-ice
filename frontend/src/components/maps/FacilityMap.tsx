@@ -134,7 +134,7 @@ const FacilityPopup = React.memo(function FacilityPopup({
   return (
     <div
       ref={popupRef}
-      onMouseDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
       style={{
         position: 'absolute',
         left,
@@ -330,10 +330,11 @@ const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
               <Geography
                 key={geo.rsmKey}
                 geography={geo}
-                onMouseEnter={
+                onPointerEnter={
                   locked
                     ? undefined
-                    : (e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
+                    : (e: React.PointerEvent<SVGPathElement>) => {
+                        if (e.pointerType !== 'mouse') return;
                         setSelectedState(abbrev);
                         if (mapRef.current) {
                           const rect = mapRef.current.getBoundingClientRect();
@@ -344,10 +345,11 @@ const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
                         }
                       }
                 }
-                onMouseMove={
+                onPointerMove={
                   locked
                     ? undefined
-                    : (e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
+                    : (e: React.PointerEvent<SVGPathElement>) => {
+                        if (e.pointerType !== 'mouse') return;
                         if (mapRef.current) {
                           const rect = mapRef.current.getBoundingClientRect();
                           const relX = e.clientX - rect.left;
@@ -357,7 +359,14 @@ const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
                         }
                       }
                 }
-                onMouseLeave={locked ? undefined : () => setSelectedState(null)}
+                onPointerLeave={
+                  locked
+                    ? undefined
+                    : (e: React.PointerEvent<SVGPathElement>) => {
+                        if (e.pointerType !== 'mouse') return;
+                        setSelectedState(null);
+                      }
+                }
                 onClick={(e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
                   if (mapRef.current) {
                     const rect = mapRef.current.getBoundingClientRect();
@@ -480,7 +489,7 @@ export function FacilityMap(props: StateFacilityProps) {
   // Click-away listener to close popup if locked and click is outside
   useEffect(() => {
     if (!locked) return;
-    function handleClick(e: MouseEvent) {
+    function handleClick(e: MouseEvent | PointerEvent) {
       if (popupRef.current) {
         const target = e.target as Node;
         const path = (e as any).composedPath?.() as Node[] | undefined;
@@ -491,8 +500,8 @@ export function FacilityMap(props: StateFacilityProps) {
         }
       }
     }
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
+    document.addEventListener('pointerdown', handleClick);
+    return () => document.removeEventListener('pointerdown', handleClick);
   }, [locked]);
 
   const popupState = locked ? locked.state : selectedState;

@@ -30,6 +30,51 @@ const EDGE_PADDING = 16;
 const BOTTOM_EDGE_PADDING = 2;
 const NEGATIVE_EDGE_PADDING = 16;
 
+function hex(n: number): string {
+  return Math.round(n).toString(16).padStart(2, '0');
+}
+
+function interpolateColor(value: number, max: number): string {
+  if (max === 0) return '#96caff';
+  const ratio = Math.max(0, Math.min(1, value / max));
+  const stops = [
+    [150, 202, 255], // light blue
+    [80, 200, 120], // green
+    [255, 165, 0], // orange
+    [139, 0, 0], // dark red
+  ];
+  let start;
+  let end;
+  let t;
+  if (ratio <= 1 / 3) {
+    start = stops[0];
+    end = stops[1];
+    t = ratio / (1 / 3);
+  } else if (ratio <= 2 / 3) {
+    start = stops[1];
+    end = stops[2];
+    t = (ratio - 1 / 3) / (1 / 3);
+  } else {
+    start = stops[2];
+    end = stops[3];
+    t = (ratio - 2 / 3) / (1 / 3);
+  }
+  const r = start[0] + (end[0] - start[0]) * t;
+  const g = start[1] + (end[1] - start[1]) * t;
+  const b = start[2] + (end[2] - start[2]) * t;
+  return `#${hex(r)}${hex(g)}${hex(b)}`;
+}
+
+function lightenColor(color: string, amount: number): string {
+  const r = parseInt(color.slice(1, 3), 16);
+  const g = parseInt(color.slice(3, 5), 16);
+  const b = parseInt(color.slice(5, 7), 16);
+  const nr = r + (255 - r) * amount;
+  const ng = g + (255 - g) * amount;
+  const nb = b + (255 - b) * amount;
+  return `#${hex(nr)}${hex(ng)}${hex(nb)}`;
+}
+
 // FacilityList: Expandable list of facilities
 const FacilityList = React.memo(function FacilityList({ facilities }: { facilities: Facility[] }) {
   return (
@@ -195,12 +240,9 @@ const FacilityPopup = React.memo(function FacilityPopup({
       )}
       <div style={{ padding: '16px' }}>
         <SpaceBetween direction="vertical" size="xs">
-          <Header variant="h2"
-            actions={
-              locked && (
-                <Button variant="icon" iconName="close" onClick={onClose} />
-              )
-            }
+          <Header
+            variant="h2"
+            actions={locked && <Button variant="icon" iconName="close" onClick={onClose} />}
             description={
               <Box variant="span" fontSize="body-m" color="text-body-secondary">
                 {stateData?.avgStay?.toLocaleString(undefined, {
@@ -243,6 +285,7 @@ const FacilityPopup = React.memo(function FacilityPopup({
 // FacilityMapGeographies: The map and geographies
 const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
   data,
+  maxPop,
   locked,
   selectedState,
   setSelectedState,
@@ -252,6 +295,7 @@ const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
   checkPopupSide,
 }: {
   data: Record<string, StateFacilities>;
+  maxPop: number;
   locked: { state: string; pos: { x: number; y: number } } | null;
   selectedState: string | null;
   setSelectedState: (s: string | null) => void;
@@ -270,65 +314,29 @@ const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
             if (!abbrev) {
               return null;
             }
-            const hasData =
-              data[abbrev] && data[abbrev].facilities.length > 0 && data[abbrev].totalPop > 0;
-            // Determine style based on locked
+            const pop = data[abbrev] ? data[abbrev].totalPop : 0;
+            const color = interpolateColor(pop, maxPop);
+            const lightColor = lightenColor(color, 0.5);
             let geoStyle;
             if (locked) {
               if (locked.state === abbrev) {
                 geoStyle = {
-                  default: {
-                    fill: hasData ? '#d42520' : '#688ae8',
-                    stroke: '#FFFFFF',
-                    strokeWidth: 2.0,
-                  },
-                  hover: {
-                    fill: hasData ? '#d42520' : '#688ae8',
-                    stroke: '#FFFFFF',
-                    strokeWidth: 2.0,
-                  },
-                  pressed: {
-                    fill: hasData ? '#d42520' : '#688ae8',
-                    stroke: '#FFFFFF',
-                    strokeWidth: 2.0,
-                  },
+                  default: { fill: color, stroke: '#FFFFFF', strokeWidth: 2.0 },
+                  hover: { fill: color, stroke: '#FFFFFF', strokeWidth: 2.0 },
+                  pressed: { fill: color, stroke: '#FFFFFF', strokeWidth: 2.0 },
                 };
               } else {
                 geoStyle = {
-                  default: {
-                    fill: hasData ? '#f1a5a3' : '#c3d0f6',
-                    stroke: '#FFFFFF',
-                    strokeWidth: 0.5,
-                  },
-                  hover: {
-                    fill: hasData ? '#f1a5a3' : '#c3d0f6',
-                    stroke: '#FFFFFF',
-                    strokeWidth: 0.5,
-                  },
-                  pressed: {
-                    fill: hasData ? '#f1a5a3' : '#c3d0f6',
-                    stroke: '#FFFFFF',
-                    strokeWidth: 0.5,
-                  },
+                  default: { fill: lightColor, stroke: '#FFFFFF', strokeWidth: 0.5 },
+                  hover: { fill: lightColor, stroke: '#FFFFFF', strokeWidth: 0.5 },
+                  pressed: { fill: lightColor, stroke: '#FFFFFF', strokeWidth: 0.5 },
                 };
               }
             } else {
               geoStyle = {
-                default: {
-                  fill: hasData ? '#f1a5a3' : '#c3d0f6',
-                  stroke: '#FFFFFF',
-                  strokeWidth: 0.5,
-                },
-                hover: {
-                  fill: hasData ? '#d42520' : '#688ae8',
-                  stroke: '#FFFFFF',
-                  strokeWidth: 2.0,
-                },
-                pressed: {
-                  fill: hasData ? '#d42520' : '#688ae8',
-                  stroke: '#FFFFFF',
-                  strokeWidth: 2.0,
-                },
+                default: { fill: lightColor, stroke: '#FFFFFF', strokeWidth: 0.5 },
+                hover: { fill: color, stroke: '#FFFFFF', strokeWidth: 2.0 },
+                pressed: { fill: color, stroke: '#FFFFFF', strokeWidth: 2.0 },
               };
             }
 
@@ -439,6 +447,11 @@ export function FacilityMap(props: StateFacilityProps) {
     return grouped;
   }, [props.data]);
 
+  const maxPop = useMemo(() => {
+    const values = Object.values(data).map((d) => d.totalPop);
+    return values.length > 0 ? Math.max(...values) : 0;
+  }, [data]);
+
   // Memoize handlers
   const { width: windowWidth } = useWindowDimensions();
   const isSmallScreen = windowWidth < MOBILE_BREAKPOINT;
@@ -517,6 +530,7 @@ export function FacilityMap(props: StateFacilityProps) {
     <div ref={mapRef} style={{ position: 'relative' }}>
       <FacilityMapGeographies
         data={data}
+        maxPop={maxPop}
         locked={locked}
         selectedState={selectedState}
         setSelectedState={setSelectedState}

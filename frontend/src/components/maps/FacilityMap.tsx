@@ -481,8 +481,14 @@ export function FacilityMap(props: StateFacilityProps) {
   useEffect(() => {
     if (!locked) return;
     function handleClick(e: MouseEvent) {
-      if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
-        setLocked(null);
+      if (popupRef.current) {
+        const target = e.target as Node;
+        const path = (e as any).composedPath?.() as Node[] | undefined;
+        const inPopup =
+          popupRef.current.contains(target) || (path ? path.includes(popupRef.current) : false);
+        if (!inPopup) {
+          setLocked(null);
+        }
       }
     }
     document.addEventListener('mousedown', handleClick);

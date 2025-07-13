@@ -27,6 +27,7 @@ const MIN_POPUP_WIDTH = 220;
 const MAX_POPUP_WIDTH = 500;
 const MOBILE_BREAKPOINT = 640;
 const EDGE_PADDING = 16;
+const BOTTOM_EDGE_PADDING = 2;
 
 // FacilityList: Expandable list of facilities
 const FacilityList = React.memo(function FacilityList({ facilities }: { facilities: Facility[] }) {
@@ -90,8 +91,9 @@ const FacilityPopup = React.memo(function FacilityPopup({
   onClose: () => void;
 }) {
   const { width: windowWidth } = useWindowDimensions();
-  const maxPopupWidth = Math.min(MAX_POPUP_WIDTH, windowWidth - 32);
-  const minPopupWidth = Math.min(MIN_POPUP_WIDTH, windowWidth - 32);
+  const horizontalPadding = popupSide === 'bottom' ? BOTTOM_EDGE_PADDING * 2 : EDGE_PADDING * 2;
+  const maxPopupWidth = Math.min(MAX_POPUP_WIDTH, windowWidth - horizontalPadding);
+  const minPopupWidth = Math.min(MIN_POPUP_WIDTH, windowWidth - horizontalPadding);
   let left =
     popupSide === 'right'
       ? popupPos.x + 32
@@ -101,8 +103,9 @@ const FacilityPopup = React.memo(function FacilityPopup({
   let arrowLeft: number | string = '50%';
   if (popupSide === 'bottom' && mapRef.current) {
     const rect = mapRef.current.getBoundingClientRect();
-    const maxLeft = rect.width - popupWidth - EDGE_PADDING;
-    const minLeft = EDGE_PADDING;
+    const padding = BOTTOM_EDGE_PADDING;
+    const maxLeft = rect.width - popupWidth - padding;
+    const minLeft = padding;
     const adjusted = Math.min(Math.max(left, minLeft), Math.max(minLeft, maxLeft));
     arrowLeft = Math.min(Math.max(popupPos.x - adjusted, 10), popupWidth - 10);
     left = adjusted;

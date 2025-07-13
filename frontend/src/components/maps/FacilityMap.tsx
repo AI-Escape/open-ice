@@ -30,28 +30,28 @@ const EDGE_PADDING = 16;
 const BOTTOM_EDGE_PADDING = 2;
 const NEGATIVE_EDGE_PADDING = 16;
 
+const COLOR_RAMP = ['#fee5d9', '#fcbba1', '#fc9272', '#fb6a4a', '#de2d26', '#a50f15'];
+const NO_DATA_COLOR = '#f7f7f7';
+
 function hex(n: number): string {
   return Math.round(n).toString(16).padStart(2, '0');
 }
 
-function interpolateColor(value: number, max: number): string {
-  if (max === 0) return '#96caff';
-  const ratio = Math.max(0, Math.min(1, value / max));
-  const stops = [
-    [150, 202, 255], // light blue
-    [255, 165, 0], // orange
-    [139, 0, 0], // dark red
-  ];
-  const segments = stops.length - 1;
-  const scaled = ratio * segments;
-  const index = Math.min(Math.floor(scaled), stops.length - 2);
-  const t = scaled - index;
-  const start = stops[index];
-  const end = stops[index + 1];
-  const r = start[0] + (end[0] - start[0]) * t;
-  const g = start[1] + (end[1] - start[1]) * t;
-  const b = start[2] + (end[2] - start[2]) * t;
-  return `#${hex(r)}${hex(g)}${hex(b)}`;
+function getThresholds(max: number): number[] {
+  if (max <= 0) return [];
+  const logMax = Math.log10(max + 1);
+  const step = logMax / COLOR_RAMP.length;
+  return Array.from({ length: COLOR_RAMP.length }, (_, i) => Math.pow(10, step * (i + 1)) - 1);
+}
+
+function getColor(value: number, thresholds: number[]): string {
+  if (value === 0) return NO_DATA_COLOR;
+  for (let i = 0; i < thresholds.length; i++) {
+    if (value <= thresholds[i]) {
+      return COLOR_RAMP[i];
+    }
+  }
+  return COLOR_RAMP[COLOR_RAMP.length - 1];
 }
 
 function lightenColor(color: string, amount: number): string {
@@ -274,7 +274,7 @@ const FacilityPopup = React.memo(function FacilityPopup({
 // FacilityMapGeographies: The map and geographies
 const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
   data,
-  maxPop,
+  thresholds,
   locked,
   selectedState,
   setSelectedState,
@@ -284,7 +284,7 @@ const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
   checkPopupSide,
 }: {
   data: Record<string, StateFacilities>;
-  maxPop: number;
+  thresholds: number[];
   locked: { state: string; pos: { x: number; y: number } } | null;
   selectedState: string | null;
   setSelectedState: (s: string | null) => void;
@@ -304,30 +304,19 @@ const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
               return null;
             }
             const pop = data[abbrev] ? data[abbrev].totalPop : 0;
-            const color = interpolateColor(pop, maxPop);
-            const lightColor = lightenColor(color, 0.5);
-            let geoStyle;
-            if (locked) {
-              if (locked.state === abbrev) {
-                geoStyle = {
-                  default: { fill: color, stroke: '#FFFFFF', strokeWidth: 2.0 },
-                  hover: { fill: color, stroke: '#FFFFFF', strokeWidth: 2.0 },
-                  pressed: { fill: color, stroke: '#FFFFFF', strokeWidth: 2.0 },
-                };
-              } else {
-                geoStyle = {
-                  default: { fill: lightColor, stroke: '#FFFFFF', strokeWidth: 0.5 },
-                  hover: { fill: lightColor, stroke: '#FFFFFF', strokeWidth: 0.5 },
-                  pressed: { fill: lightColor, stroke: '#FFFFFF', strokeWidth: 0.5 },
-                };
-              }
-            } else {
-              geoStyle = {
-                default: { fill: lightColor, stroke: '#FFFFFF', strokeWidth: 0.5 },
-                hover: { fill: color, stroke: '#FFFFFF', strokeWidth: 2.0 },
-                pressed: { fill: color, stroke: '#FFFFFF', strokeWidth: 2.0 },
-              };
-            }
+            const color = getColor(pop, thresholds);
+            const highlightState = locked ? locked.state : selectedState;
+            const faded = lightenColor(color, 0.5);
+            const isDim = highlightState && highlightState !== abbrev;
+            const geoStyle = {
+              default: {
+                fill: isDim ? faded : color,
+                stroke: '#FFFFFF',
+                strokeWidth: highlightState === abbrev ? 2.0 : 0.5,
+              },
+              hover: { fill: color, stroke: '#FFFFFF', strokeWidth: 2.0 },
+              pressed: { fill: color, stroke: '#FFFFFF', strokeWidth: 2.0 },
+            };
 
             return (
               <Geography
@@ -391,6 +380,106 @@ const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
   );
 });
 
+const MapLegend = React.memo(function MapLegend({ thresholds }: { thresholds: number[] }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [hover, setHover] = useState<{
+    index: number;
+    pos: { x: number; y: number };
+  } | null>(null);
+
+  const labels = useMemo(() => {
+    if (thresholds.length === 0) return [];
+    const cuts: string[] = ['0'];
+    for (let i = 0; i < thresholds.length; i++) {
+      const start = i === 0 ? 1 : thresholds[i - 1] + 1;
+      const end = thresholds[i];
+      cuts.push(`${start}\u2013${end}`);
+    }
+    cuts.push(`>${thresholds[thresholds.length - 1]}`);
+    return cuts;
+  }, [thresholds]);
+
+  const segmentWidth = 100 / (thresholds.length + 1);
+
+  return (
+    <div
+      ref={ref}
+      style={{
+        marginTop: '8px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        position: 'relative',
+      }}
+    >
+      <span className="legend-title" style={{ alignSelf: 'flex-start' }}>
+        Avg daily detainees
+      </span>
+      <svg width="100%" height="22" style={{ display: 'block' }}>
+        {[NO_DATA_COLOR, ...COLOR_RAMP].map((color, i) => (
+          <rect
+            key={i}
+            x={`${segmentWidth * i}%`}
+            y={0}
+            width={`${segmentWidth}%`}
+            height={16}
+            fill={color}
+            stroke={hover?.index === i ? '#000' : '#ccc'}
+            strokeWidth={hover?.index === i ? 2 : 1}
+            onPointerEnter={(e) => {
+              if (!ref.current) return;
+              const rect = ref.current.getBoundingClientRect();
+              setHover({
+                index: i,
+                pos: { x: e.clientX - rect.left, y: -4 },
+              });
+            }}
+            onPointerMove={(e) => {
+              if (!ref.current) return;
+              const rect = ref.current.getBoundingClientRect();
+              setHover({ index: i, pos: { x: e.clientX - rect.left, y: -4 } });
+            }}
+            onPointerLeave={() => setHover(null)}
+          />
+        ))}
+      </svg>
+      <div style={{ display: 'flex', width: '100%', fontSize: '12px' }}>
+        {labels.map((label, i) => (
+          <div
+            key={i}
+            style={{
+              width: `${segmentWidth}%`,
+              textAlign: 'center',
+            }}
+          >
+            {label}
+          </div>
+        ))}
+      </div>
+      {hover && labels[hover.index] && (
+        <div
+          style={{
+            position: 'absolute',
+            left: hover.pos.x,
+            top: hover.pos.y - 24,
+            transform: 'translateX(-50%)',
+            background: 'white',
+            border: '1px solid #d1d5db',
+            borderRadius: '4px',
+            padding: '2px 4px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            pointerEvents: 'none',
+            whiteSpace: 'nowrap',
+            zIndex: 1000,
+          }}
+        >
+          {labels[hover.index]}
+        </div>
+      )}
+    </div>
+  );
+});
+
 export function FacilityMap(props: StateFacilityProps) {
   const [selectedState, setSelectedState] = useState<string | null>(null);
   const [locked, setLocked] = useState<{ state: string; pos: { x: number; y: number } } | null>(
@@ -440,6 +529,8 @@ export function FacilityMap(props: StateFacilityProps) {
     const values = Object.values(data).map((d) => d.totalPop);
     return values.length > 0 ? Math.max(...values) : 0;
   }, [data]);
+
+  const thresholds = useMemo(() => getThresholds(maxPop), [maxPop]);
 
   // Memoize handlers
   const { width: windowWidth } = useWindowDimensions();
@@ -516,31 +607,34 @@ export function FacilityMap(props: StateFacilityProps) {
   const stateData = popupState ? data[popupState] : undefined;
 
   return (
-    <div ref={mapRef} style={{ position: 'relative' }}>
-      <FacilityMapGeographies
-        data={data}
-        maxPop={maxPop}
-        locked={locked}
-        selectedState={selectedState}
-        setSelectedState={setSelectedState}
-        setLocked={setLocked}
-        setPos={setPos}
-        mapRef={mapRef}
-        checkPopupSide={checkPopupSide}
-      />
-      {popupState && (
-        <FacilityPopup
-          popupState={popupState}
-          popupPos={popupPos}
-          popupSide={popupSide}
-          popupWidth={popupWidth}
-          stateData={stateData}
-          locked={!!locked}
-          popupRef={popupRef}
+    <div style={{ width: '100%' }}>
+      <div ref={mapRef} style={{ position: 'relative' }}>
+        <FacilityMapGeographies
+          data={data}
+          thresholds={thresholds}
+          locked={locked}
+          selectedState={selectedState}
+          setSelectedState={setSelectedState}
+          setLocked={setLocked}
+          setPos={setPos}
           mapRef={mapRef}
-          onClose={() => setLocked(null)}
+          checkPopupSide={checkPopupSide}
         />
-      )}
+        {popupState && (
+          <FacilityPopup
+            popupState={popupState}
+            popupPos={popupPos}
+            popupSide={popupSide}
+            popupWidth={popupWidth}
+            stateData={stateData}
+            locked={!!locked}
+            popupRef={popupRef}
+            mapRef={mapRef}
+            onClose={() => setLocked(null)}
+          />
+        )}
+      </div>
+      <MapLegend thresholds={thresholds} />
     </div>
   );
 }

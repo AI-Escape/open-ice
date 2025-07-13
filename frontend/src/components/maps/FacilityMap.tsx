@@ -50,17 +50,25 @@ const FacilityList = React.memo(function FacilityList({ facilities }: { faciliti
                 (f.no_ice_threat_level ?? 0)
               ).toLocaleString(undefined, { maximumFractionDigits: 0 })
             }
-            style={{ display: 'flex', justifyContent: 'space-between' }}
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+            }}
           >
-            <Box variant="span">{f.name}</Box>
-            <Box variant="span" color="text-body-secondary">
-              {(
-                (f.ice_threat_level_1 ?? 0) +
-                (f.ice_threat_level_2 ?? 0) +
-                (f.ice_threat_level_3 ?? 0) +
-                (f.no_ice_threat_level ?? 0)
-              ).toLocaleString(undefined, { maximumFractionDigits: 0 })}
-            </Box>
+            <div style={{ paddingRight: '8px', flex: 1 }}>
+              <Box variant="span">{f.name}</Box>
+            </div>
+            <div style={{ whiteSpace: 'nowrap' }}>
+              <Box variant="span" color="text-body-secondary">
+                {(
+                  (f.ice_threat_level_1 ?? 0) +
+                  (f.ice_threat_level_2 ?? 0) +
+                  (f.ice_threat_level_3 ?? 0) +
+                  (f.no_ice_threat_level ?? 0)
+                ).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+              </Box>
+            </div>
           </div>
         ))}
       </div>

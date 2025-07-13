@@ -91,24 +91,37 @@ const FacilityPopup = React.memo(function FacilityPopup({
   onClose: () => void;
 }) {
   const { width: windowWidth } = useWindowDimensions();
+  const isSmallScreen = windowWidth < MOBILE_BREAKPOINT;
+  const containerWidth = mapRef.current
+    ? Math.min(windowWidth, mapRef.current.getBoundingClientRect().width)
+    : windowWidth;
   const horizontalPadding = popupSide === 'bottom' ? BOTTOM_EDGE_PADDING * 2 : EDGE_PADDING * 2;
-  const maxPopupWidth = Math.min(MAX_POPUP_WIDTH, windowWidth - horizontalPadding);
-  const minPopupWidth = Math.min(MIN_POPUP_WIDTH, windowWidth - horizontalPadding);
-  let left =
+  const popupFullWidth = containerWidth - horizontalPadding;
+  const maxPopupWidth = Math.min(MAX_POPUP_WIDTH, popupFullWidth);
+  const minPopupWidth = Math.min(MIN_POPUP_WIDTH, popupFullWidth);
+  const initialLeft =
     popupSide === 'right'
       ? popupPos.x + 32
       : popupSide === 'left'
         ? popupPos.x - popupWidth - 32
         : popupPos.x - popupWidth / 2;
+  let left = initialLeft;
   let arrowLeft: number | string = '50%';
   if (popupSide === 'bottom' && mapRef.current) {
     const rect = mapRef.current.getBoundingClientRect();
     const padding = BOTTOM_EDGE_PADDING;
-    const maxLeft = rect.width - popupWidth - padding;
-    const minLeft = padding;
-    const adjusted = Math.min(Math.max(left, minLeft), Math.max(minLeft, maxLeft));
-    arrowLeft = Math.min(Math.max(popupPos.x - adjusted, 10), popupWidth - 10);
-    left = adjusted;
+    if (isSmallScreen) {
+      const adjusted = padding;
+      const width = popupFullWidth;
+      arrowLeft = Math.min(Math.max(popupPos.x - adjusted, 10), width - 10);
+      left = adjusted;
+    } else {
+      const maxLeft = Math.min(rect.width, windowWidth) - popupWidth - padding;
+      const minLeft = padding;
+      const adjusted = Math.min(Math.max(left, minLeft), Math.max(minLeft, maxLeft));
+      arrowLeft = Math.min(Math.max(popupPos.x - adjusted, 10), popupWidth - 10);
+      left = adjusted;
+    }
   }
   return (
     <div
@@ -117,11 +130,11 @@ const FacilityPopup = React.memo(function FacilityPopup({
         position: 'absolute',
         left,
         top: popupSide === 'bottom' ? popupPos.y + 24 : popupPos.y - 24,
-        minWidth: minPopupWidth,
-        maxWidth: maxPopupWidth,
-        width: 'max-content',
+        minWidth: popupSide === 'bottom' && isSmallScreen ? popupFullWidth : minPopupWidth,
+        maxWidth: popupSide === 'bottom' && isSmallScreen ? popupFullWidth : maxPopupWidth,
+        width: popupSide === 'bottom' && isSmallScreen ? popupFullWidth : 'max-content',
         background: 'white',
-        padding: '16px 20px 12px 20px',
+        padding: 0,
         border: '1px solid #d1d5db',
         borderRadius: '12px',
         boxShadow: '0 4px 24px rgba(0,0,0,0.13)',

@@ -34,6 +34,18 @@ Each directory has its own README with setup details.
 - ESLint configuration lives in `.eslintrc`
 - Components are written in TypeScript using React hooks
 - Explicitly define the types for all props and state in the component
+- Prefer named function exports for React components instead of `React.FC`.
+  Each component should be declared as `export function ComponentName(props: ComponentNameProps): JSX.Element`.
+  
+  ```tsx
+  export type ExampleProps = {
+    title: string;
+  };
+
+  export function Example(props: ExampleProps): JSX.Element {
+    return <h1>{props.title}</h1>;
+  }
+  ```
 - Tailwind CSS is used for styling
 - Primary framework is `cloudscape-design` by AWS. See `https://cloudscape.design/components/` for library reference, as well as existing code
 - Ensure the project compiles with `tsc` before committing

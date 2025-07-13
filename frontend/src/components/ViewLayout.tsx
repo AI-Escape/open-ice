@@ -38,7 +38,7 @@ export function ViewLayout(props: ViewLayoutProps) {
             {props.children}
             <Footer />
             {/* a div with like 300 vertical height to add height to site below footer */}
-            <div style={{ height: '1000px' }}></div>
+            <div style={{ height: '500px' }}></div>
           </ContentLayout>
         }
         contentType={props.contentType ?? 'default'}

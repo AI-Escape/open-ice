@@ -28,6 +28,7 @@ const MAX_POPUP_WIDTH = 500;
 const MOBILE_BREAKPOINT = 640;
 const EDGE_PADDING = 16;
 const BOTTOM_EDGE_PADDING = 2;
+const NEGATIVE_EDGE_PADDING = 16;
 
 // FacilityList: Expandable list of facilities
 const FacilityList = React.memo(function FacilityList({ facilities }: { facilities: Facility[] }) {
@@ -137,7 +138,7 @@ const FacilityPopup = React.memo(function FacilityPopup({
       onPointerDown={(e) => e.stopPropagation()}
       style={{
         position: 'absolute',
-        left,
+        left: left,
         top: popupSide === 'bottom' ? popupPos.y + 24 : popupPos.y - 24,
         minWidth: popupSide === 'bottom' && isSmallScreen ? popupFullWidth : minPopupWidth,
         maxWidth: popupSide === 'bottom' && isSmallScreen ? popupFullWidth : maxPopupWidth,
@@ -154,11 +155,6 @@ const FacilityPopup = React.memo(function FacilityPopup({
         alignItems: 'flex-start',
       }}
     >
-      {locked && (
-        <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 1100 }}>
-          <Button variant="icon" iconName="close" onClick={onClose} />
-        </div>
-      )}
       {/* Chevron for all three positions */}
       {popupSide !== 'bottom' ? (
         <div
@@ -199,20 +195,29 @@ const FacilityPopup = React.memo(function FacilityPopup({
       )}
       <div style={{ padding: '16px' }}>
         <SpaceBetween direction="vertical" size="xs">
-          <Header variant="h2">
+          <Header variant="h2"
+            actions={
+              locked && (
+                <Button variant="icon" iconName="close" onClick={onClose} />
+              )
+            }
+            description={
+              <Box variant="span" fontSize="body-m" color="text-body-secondary">
+                {stateData?.avgStay?.toLocaleString(undefined, {
+                  maximumFractionDigits: 1,
+                  minimumFractionDigits: 1,
+                }) ?? '0.0'}{' '}
+                days average stay
+              </Box>
+            }
+          >
             {getStateName(popupState) ?? popupState}
-            <Box variant="span" fontSize="body-m" color="text-body-secondary">
-              {' | '}
-              {stateData?.avgStay?.toLocaleString(undefined, {
-                maximumFractionDigits: 1,
-                minimumFractionDigits: 1,
-              }) ?? '0.0'}{' '}
-              days average stay
-            </Box>
           </Header>
           {stateData && <FacilityList facilities={stateData.facilities} />}
           {stateData && stateData.facilities.length > 0 && stateData.totalPop > 0 && (
-            <ThreatPieChart data={stateData.facilities} />
+            <div style={{ width: '100%' }}>
+              <ThreatPieChart data={stateData.facilities} />
+            </div>
           )}
           <hr style={{ width: '100%', borderRadius: '1px' }} />
           <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
@@ -326,7 +331,7 @@ const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
                 },
               };
             }
-            
+
             return (
               <Geography
                 key={geo.rsmKey}
@@ -379,7 +384,6 @@ const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
                   }
                 }}
                 tabIndex={0}
-                onFocus={locked ? undefined : () => setSelectedState(abbrev)}
                 style={geoStyle}
               />
             );

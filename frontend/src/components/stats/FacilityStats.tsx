@@ -1,4 +1,4 @@
-import { Box, Container, Header } from "@cloudscape-design/components";
+import { Box, Container, Header, SpaceBetween } from "@cloudscape-design/components";
 import { Facility } from "../../common/types";
 import FacilityMap from "../maps/FacilityMap";
 
@@ -9,8 +9,7 @@ export type FacilityStatsProps = {
 
 export function FacilityStats(props: FacilityStatsProps) {
   return (
-    <Container header={
-    
+    <SpaceBetween direction="vertical" size="m">
       <Header variant="h1" description="Where are detainees being held?">
         <Box
           variant="span"
@@ -22,9 +21,7 @@ export function FacilityStats(props: FacilityStatsProps) {
           <div>Detention Facility Map</div>
         </Box>
       </Header> 
-    
-    }>
-      <FacilityMap data={props.data} />
-    </Container>
+    <FacilityMap data={props.data} />
+  </SpaceBetween>
   );
 }

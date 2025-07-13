@@ -1,10 +1,17 @@
 import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
-import { SpaceBetween, Box, Header, Button, ExpandableSection } from '@cloudscape-design/components';
+import {
+  SpaceBetween,
+  Box,
+  Header,
+  Button,
+  ExpandableSection,
+} from '@cloudscape-design/components';
 import { Facility } from '../../common/types';
 import states from '../../data/states-10m.json';
 import { getStateAbbreviation, getStateName } from '../../common/geo/states';
 import { ThreatPieChart } from '../graphs/ThreatPieChart';
+import useWindowDimensions from '../../common/window';
 
 export type StateFacilities = {
   facilities: Facility[];
@@ -18,6 +25,7 @@ export type StateFacilityProps = {
 
 const MIN_POPUP_WIDTH = 220;
 const MAX_POPUP_WIDTH = 500;
+const MOBILE_BREAKPOINT = 640;
 
 // FacilityList: Expandable list of facilities
 const FacilityList = React.memo(function FacilityList({ facilities }: { facilities: Facility[] }) {
@@ -25,9 +33,32 @@ const FacilityList = React.memo(function FacilityList({ facilities }: { faciliti
     <ExpandableSection headerText={`${facilities.length} facilities`}>
       <div style={{ width: '100%' }}>
         {facilities.map((f: Facility) => (
-          <div key={f.state + ' ' + f.name + ' ' + f.city + ' ' + ((f.ice_threat_level_1 ?? 0) + (f.ice_threat_level_2 ?? 0) + (f.ice_threat_level_3 ?? 0) + (f.no_ice_threat_level ?? 0)).toLocaleString(undefined, { maximumFractionDigits: 0 })} style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div
+            key={
+              f.state +
+              ' ' +
+              f.name +
+              ' ' +
+              f.city +
+              ' ' +
+              (
+                (f.ice_threat_level_1 ?? 0) +
+                (f.ice_threat_level_2 ?? 0) +
+                (f.ice_threat_level_3 ?? 0) +
+                (f.no_ice_threat_level ?? 0)
+              ).toLocaleString(undefined, { maximumFractionDigits: 0 })
+            }
+            style={{ display: 'flex', justifyContent: 'space-between' }}
+          >
             <Box variant="span">{f.name}</Box>
-            <Box variant="span" color="text-body-secondary">{((f.ice_threat_level_1 ?? 0) + (f.ice_threat_level_2 ?? 0) + (f.ice_threat_level_3 ?? 0) + (f.no_ice_threat_level ?? 0)).toLocaleString(undefined, { maximumFractionDigits: 0 })}</Box>
+            <Box variant="span" color="text-body-secondary">
+              {(
+                (f.ice_threat_level_1 ?? 0) +
+                (f.ice_threat_level_2 ?? 0) +
+                (f.ice_threat_level_3 ?? 0) +
+                (f.no_ice_threat_level ?? 0)
+              ).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+            </Box>
           </div>
         ))}
       </div>
@@ -55,6 +86,9 @@ const FacilityPopup = React.memo(function FacilityPopup({
   popupRef: React.RefObject<HTMLDivElement>;
   onClose: () => void;
 }) {
+  const { width: windowWidth } = useWindowDimensions();
+  const maxPopupWidth = Math.min(MAX_POPUP_WIDTH, windowWidth - 32);
+  const minPopupWidth = Math.min(MIN_POPUP_WIDTH, windowWidth - 32);
   return (
     <div
       ref={popupRef}
@@ -64,11 +98,11 @@ const FacilityPopup = React.memo(function FacilityPopup({
           popupSide === 'right'
             ? popupPos.x + 32
             : popupSide === 'left'
-            ? popupPos.x - popupWidth - 32
-            : popupPos.x - popupWidth / 2,
+              ? popupPos.x - popupWidth - 32
+              : popupPos.x - popupWidth / 2,
         top: popupSide === 'bottom' ? popupPos.y + 24 : popupPos.y - 24,
-        minWidth: MIN_POPUP_WIDTH,
-        maxWidth: MAX_POPUP_WIDTH,
+        minWidth: minPopupWidth,
+        maxWidth: maxPopupWidth,
         width: 'max-content',
         background: 'white',
         padding: '16px 20px 12px 20px',
@@ -102,7 +136,10 @@ const FacilityPopup = React.memo(function FacilityPopup({
             borderBottom: '10px solid transparent',
             borderLeft: popupSide === 'left' ? '12px solid white' : undefined,
             borderRight: popupSide === 'right' ? '12px solid white' : undefined,
-            filter: popupSide === 'right' ? 'drop-shadow(-2px 0 2px #d1d5db)' : 'drop-shadow(2px 0 2px #d1d5db)',
+            filter:
+              popupSide === 'right'
+                ? 'drop-shadow(-2px 0 2px #d1d5db)'
+                : 'drop-shadow(2px 0 2px #d1d5db)',
           }}
         />
       ) : (
@@ -127,19 +164,30 @@ const FacilityPopup = React.memo(function FacilityPopup({
           {getStateName(popupState) ?? popupState}
           <Box variant="span" fontSize="body-m" color="text-body-secondary">
             {' | '}
-            {stateData?.avgStay?.toLocaleString(undefined, { maximumFractionDigits: 1, minimumFractionDigits: 1 }) ?? '0.0'} days average stay
+            {stateData?.avgStay?.toLocaleString(undefined, {
+              maximumFractionDigits: 1,
+              minimumFractionDigits: 1,
+            }) ?? '0.0'}{' '}
+            days average stay
           </Box>
         </Header>
         {stateData && <FacilityList facilities={stateData.facilities} />}
-        {stateData && stateData.facilities.length > 0 && stateData.totalPop > 0 && <ThreatPieChart data={stateData.facilities} />}
+        {stateData && stateData.facilities.length > 0 && stateData.totalPop > 0 && (
+          <ThreatPieChart data={stateData.facilities} />
+        )}
         <hr style={{ width: '100%', borderRadius: '1px' }} />
         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
           <span>Total</span>
-          <span>{(stateData?.totalPop ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })} people</span>
+          <span>
+            {(stateData?.totalPop ?? 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}{' '}
+            people
+          </span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
           <Box variant="span" fontSize="body-s" color="text-body-secondary">
-            The average daily population is the average number of people held in custody each day. Detainees are overwhelmingly non-criminal, and have not necessarily been convicted of any immigration violations while in custody.
+            The average daily population is the average number of people held in custody each day.
+            Detainees are overwhelmingly non-criminal, and have not necessarily been convicted of
+            any immigration violations while in custody.
           </Box>
         </div>
       </SpaceBetween>
@@ -177,28 +225,65 @@ const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
             if (!abbrev) {
               return null;
             }
-            const hasData = data[abbrev] && data[abbrev].facilities.length > 0 && data[abbrev].totalPop > 0;
+            const hasData =
+              data[abbrev] && data[abbrev].facilities.length > 0 && data[abbrev].totalPop > 0;
             // Determine style based on locked
             let geoStyle;
             if (locked) {
               if (locked.state === abbrev) {
                 geoStyle = {
-                  default: { fill: hasData ? '#d42520' : '#688ae8', stroke: '#FFFFFF', strokeWidth: 2.0 },
-                  hover: { fill: hasData ? '#d42520' : '#688ae8', stroke: '#FFFFFF', strokeWidth: 2.0 },
-                  pressed: { fill: hasData ? '#d42520' : '#688ae8', stroke: '#FFFFFF', strokeWidth: 2.0 },
+                  default: {
+                    fill: hasData ? '#d42520' : '#688ae8',
+                    stroke: '#FFFFFF',
+                    strokeWidth: 2.0,
+                  },
+                  hover: {
+                    fill: hasData ? '#d42520' : '#688ae8',
+                    stroke: '#FFFFFF',
+                    strokeWidth: 2.0,
+                  },
+                  pressed: {
+                    fill: hasData ? '#d42520' : '#688ae8',
+                    stroke: '#FFFFFF',
+                    strokeWidth: 2.0,
+                  },
                 };
               } else {
                 geoStyle = {
-                  default: { fill: hasData ? '#f1a5a3' : '#c3d0f6', stroke: '#FFFFFF', strokeWidth: 0.5 },
-                  hover: { fill: hasData ? '#f1a5a3' : '#c3d0f6', stroke: '#FFFFFF', strokeWidth: 0.5 },
-                  pressed: { fill: hasData ? '#f1a5a3' : '#c3d0f6', stroke: '#FFFFFF', strokeWidth: 0.5 },
+                  default: {
+                    fill: hasData ? '#f1a5a3' : '#c3d0f6',
+                    stroke: '#FFFFFF',
+                    strokeWidth: 0.5,
+                  },
+                  hover: {
+                    fill: hasData ? '#f1a5a3' : '#c3d0f6',
+                    stroke: '#FFFFFF',
+                    strokeWidth: 0.5,
+                  },
+                  pressed: {
+                    fill: hasData ? '#f1a5a3' : '#c3d0f6',
+                    stroke: '#FFFFFF',
+                    strokeWidth: 0.5,
+                  },
                 };
               }
             } else {
               geoStyle = {
-                default: { fill: hasData ? '#f1a5a3' : '#c3d0f6', stroke: '#FFFFFF', strokeWidth: 0.5 },
-                hover: { fill: hasData ? '#d42520' : '#688ae8', stroke: '#FFFFFF', strokeWidth: 2.0 },
-                pressed: { fill: hasData ? '#d42520' : '#688ae8', stroke: '#FFFFFF', strokeWidth: 2.0 },
+                default: {
+                  fill: hasData ? '#f1a5a3' : '#c3d0f6',
+                  stroke: '#FFFFFF',
+                  strokeWidth: 0.5,
+                },
+                hover: {
+                  fill: hasData ? '#d42520' : '#688ae8',
+                  stroke: '#FFFFFF',
+                  strokeWidth: 2.0,
+                },
+                pressed: {
+                  fill: hasData ? '#d42520' : '#688ae8',
+                  stroke: '#FFFFFF',
+                  strokeWidth: 2.0,
+                },
               };
             }
             return (
@@ -258,7 +343,9 @@ const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
 
 export function FacilityMap(props: StateFacilityProps) {
   const [selectedState, setSelectedState] = useState<string | null>(null);
-  const [locked, setLocked] = useState<{ state: string; pos: { x: number; y: number } } | null>(null);
+  const [locked, setLocked] = useState<{ state: string; pos: { x: number; y: number } } | null>(
+    null,
+  );
   const [pos, setPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [popupSide, setPopupSide] = useState<'right' | 'left' | 'bottom'>('right');
   const mapRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
@@ -273,31 +360,57 @@ export function FacilityMap(props: StateFacilityProps) {
         grouped[key] = { facilities: [], totalPop: 0, avgStay: 0 };
       }
       grouped[key].facilities.push(f);
-      grouped[key].totalPop += (f.ice_threat_level_1 ?? 0) + (f.ice_threat_level_2 ?? 0) + (f.ice_threat_level_3 ?? 0) + (f.no_ice_threat_level ?? 0);
+      grouped[key].totalPop +=
+        (f.ice_threat_level_1 ?? 0) +
+        (f.ice_threat_level_2 ?? 0) +
+        (f.ice_threat_level_3 ?? 0) +
+        (f.no_ice_threat_level ?? 0);
       grouped[key].avgStay += f.fy25_alos ?? 0;
     }
     for (const key in grouped) {
       if (grouped[key].facilities.length > 0) {
         grouped[key].avgStay /= grouped[key].facilities.length;
       }
-      grouped[key].facilities.sort((a, b) => (b.ice_threat_level_1 ?? 0) + (b.ice_threat_level_2 ?? 0) + (b.ice_threat_level_3 ?? 0) + (b.no_ice_threat_level ?? 0) - (a.ice_threat_level_1 ?? 0) - (a.ice_threat_level_2 ?? 0) - (a.ice_threat_level_3 ?? 0) - (a.no_ice_threat_level ?? 0));
+      grouped[key].facilities.sort(
+        (a, b) =>
+          (b.ice_threat_level_1 ?? 0) +
+          (b.ice_threat_level_2 ?? 0) +
+          (b.ice_threat_level_3 ?? 0) +
+          (b.no_ice_threat_level ?? 0) -
+          (a.ice_threat_level_1 ?? 0) -
+          (a.ice_threat_level_2 ?? 0) -
+          (a.ice_threat_level_3 ?? 0) -
+          (a.no_ice_threat_level ?? 0),
+      );
     }
     return grouped;
   }, [props.data]);
 
   // Memoize handlers
-  const checkPopupSide = useCallback((x: number) => {
-    if (mapRef.current) {
-      const rect = mapRef.current.getBoundingClientRect();
-      if (x + MAX_POPUP_WIDTH > rect.width - 16 && x - MIN_POPUP_WIDTH < 16) {
+  const { width: windowWidth } = useWindowDimensions();
+  const isSmallScreen = windowWidth < MOBILE_BREAKPOINT;
+
+  const checkPopupSide = useCallback(
+    (x: number) => {
+      if (isSmallScreen) {
         setPopupSide('bottom');
-      } else if (x + MAX_POPUP_WIDTH > rect.width - 16) {
-        setPopupSide('left');
-      } else {
-        setPopupSide('right');
+        return;
       }
-    }
-  }, []);
+      if (mapRef.current) {
+        const rect = mapRef.current.getBoundingClientRect();
+        const maxWidth = Math.min(MAX_POPUP_WIDTH, windowWidth - 32);
+        const minWidth = Math.min(MIN_POPUP_WIDTH, windowWidth - 32);
+        if (x + maxWidth > rect.width - 16 && x - minWidth < 16) {
+          setPopupSide('bottom');
+        } else if (x + maxWidth > rect.width - 16) {
+          setPopupSide('left');
+        } else {
+          setPopupSide('right');
+        }
+      }
+    },
+    [isSmallScreen, windowWidth],
+  );
 
   // Update popup width after render
   useEffect(() => {
@@ -314,20 +427,22 @@ export function FacilityMap(props: StateFacilityProps) {
         left = popupPos.x - width;
       }
       const EDGE_BUFFER = 0;
-      if ((popupSide === 'right' || popupSide === 'left') && (left < EDGE_BUFFER || left + width > rect.width - EDGE_BUFFER)) {
+      if (isSmallScreen) {
+        setPopupSide('bottom');
+      } else if (
+        (popupSide === 'right' || popupSide === 'left') &&
+        (left < EDGE_BUFFER || left + width > rect.width - EDGE_BUFFER)
+      ) {
         setPopupSide('bottom');
       }
     }
-  }, [locked, selectedState, data, popupSide, pos.x]);
+  }, [locked, selectedState, data, popupSide, pos.x, isSmallScreen]);
 
   // Click-away listener to close popup if locked and click is outside
   useEffect(() => {
     if (!locked) return;
     function handleClick(e: MouseEvent) {
-      if (
-        popupRef.current &&
-        !popupRef.current.contains(e.target as Node)
-      ) {
+      if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
         setLocked(null);
       }
     }

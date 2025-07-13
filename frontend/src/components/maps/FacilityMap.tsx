@@ -134,6 +134,7 @@ const FacilityPopup = React.memo(function FacilityPopup({
   return (
     <div
       ref={popupRef}
+      onMouseDown={(e) => e.stopPropagation()}
       style={{
         position: 'absolute',
         left,

@@ -382,20 +382,14 @@ const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
 
 const MapLegend = React.memo(function MapLegend({ thresholds }: { thresholds: number[] }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [hover, setHover] = useState<{
-    index: number;
-    pos: { x: number; y: number };
-  } | null>(null);
-
   const labels = useMemo(() => {
     if (thresholds.length === 0) return [];
     const cuts: string[] = ['0'];
     for (let i = 0; i < thresholds.length; i++) {
       const start = i === 0 ? 1 : thresholds[i - 1] + 1;
       const end = thresholds[i];
-      cuts.push(`${start}\u2013${end}`);
+      cuts.push(`${start.toLocaleString(undefined, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}\u2013${end.toLocaleString(undefined, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}`);
     }
-    cuts.push(`>${thresholds[thresholds.length - 1]}`);
     return cuts;
   }, [thresholds]);
 
@@ -404,17 +398,11 @@ const MapLegend = React.memo(function MapLegend({ thresholds }: { thresholds: nu
   return (
     <div
       ref={ref}
-      style={{
-        marginTop: '8px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        position: 'relative',
-      }}
+      className="flex flex-col items-center relative w-full mt-2 gap-2"
     >
-      <span className="legend-title" style={{ alignSelf: 'flex-start' }}>
-        Avg daily detainees
-      </span>
+      <Header variant="h3" description="Log scale of average daily detained population">
+        Average Daily Detained Population
+      </Header>
       <svg width="100%" height="22" style={{ display: 'block' }}>
         {[NO_DATA_COLOR, ...COLOR_RAMP].map((color, i) => (
           <rect
@@ -424,22 +412,8 @@ const MapLegend = React.memo(function MapLegend({ thresholds }: { thresholds: nu
             width={`${segmentWidth}%`}
             height={16}
             fill={color}
-            stroke={hover?.index === i ? '#000' : '#ccc'}
-            strokeWidth={hover?.index === i ? 2 : 1}
-            onPointerEnter={(e) => {
-              if (!ref.current) return;
-              const rect = ref.current.getBoundingClientRect();
-              setHover({
-                index: i,
-                pos: { x: e.clientX - rect.left, y: -4 },
-              });
-            }}
-            onPointerMove={(e) => {
-              if (!ref.current) return;
-              const rect = ref.current.getBoundingClientRect();
-              setHover({ index: i, pos: { x: e.clientX - rect.left, y: -4 } });
-            }}
-            onPointerLeave={() => setHover(null)}
+            stroke={'#ccc'}
+            strokeWidth={1}
           />
         ))}
       </svg>
@@ -456,26 +430,6 @@ const MapLegend = React.memo(function MapLegend({ thresholds }: { thresholds: nu
           </div>
         ))}
       </div>
-      {hover && labels[hover.index] && (
-        <div
-          style={{
-            position: 'absolute',
-            left: hover.pos.x,
-            top: hover.pos.y - 24,
-            transform: 'translateX(-50%)',
-            background: 'white',
-            border: '1px solid #d1d5db',
-            borderRadius: '4px',
-            padding: '2px 4px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-            pointerEvents: 'none',
-            whiteSpace: 'nowrap',
-            zIndex: 1000,
-          }}
-        >
-          {labels[hover.index]}
-        </div>
-      )}
     </div>
   );
 });
@@ -499,16 +453,18 @@ export function FacilityMap(props: StateFacilityProps) {
         grouped[key] = { facilities: [], totalPop: 0, avgStay: 0 };
       }
       grouped[key].facilities.push(f);
-      grouped[key].totalPop +=
-        (f.ice_threat_level_1 ?? 0) +
-        (f.ice_threat_level_2 ?? 0) +
-        (f.ice_threat_level_3 ?? 0) +
-        (f.no_ice_threat_level ?? 0);
-      grouped[key].avgStay += f.fy25_alos ?? 0;
+      const totalPop = (f.ice_threat_level_1 ?? 0) +
+      (f.ice_threat_level_2 ?? 0) +
+      (f.ice_threat_level_3 ?? 0) +
+      (f.no_ice_threat_level ?? 0)
+      grouped[key].totalPop += totalPop;
+      // average stay * population = total stay days, then we 
+      // divide by total population to get average stay for the state
+      grouped[key].avgStay += (f.fy25_alos ?? 0) * totalPop;
     }
     for (const key in grouped) {
-      if (grouped[key].facilities.length > 0) {
-        grouped[key].avgStay /= grouped[key].facilities.length;
+      if (grouped[key].totalPop > 0) {
+        grouped[key].avgStay /= grouped[key].totalPop;
       }
       grouped[key].facilities.sort(
         (a, b) =>

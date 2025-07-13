@@ -26,6 +26,7 @@ export type StateFacilityProps = {
 const MIN_POPUP_WIDTH = 220;
 const MAX_POPUP_WIDTH = 500;
 const MOBILE_BREAKPOINT = 640;
+const EDGE_PADDING = 16;
 
 // FacilityList: Expandable list of facilities
 const FacilityList = React.memo(function FacilityList({ facilities }: { facilities: Facility[] }) {
@@ -75,6 +76,7 @@ const FacilityPopup = React.memo(function FacilityPopup({
   stateData,
   locked,
   popupRef,
+  mapRef,
   onClose,
 }: {
   popupState: string;
@@ -84,22 +86,33 @@ const FacilityPopup = React.memo(function FacilityPopup({
   stateData: StateFacilities | undefined;
   locked: boolean;
   popupRef: React.RefObject<HTMLDivElement>;
+  mapRef: React.RefObject<HTMLDivElement>;
   onClose: () => void;
 }) {
   const { width: windowWidth } = useWindowDimensions();
   const maxPopupWidth = Math.min(MAX_POPUP_WIDTH, windowWidth - 32);
   const minPopupWidth = Math.min(MIN_POPUP_WIDTH, windowWidth - 32);
+  let left =
+    popupSide === 'right'
+      ? popupPos.x + 32
+      : popupSide === 'left'
+        ? popupPos.x - popupWidth - 32
+        : popupPos.x - popupWidth / 2;
+  let arrowLeft: number | string = '50%';
+  if (popupSide === 'bottom' && mapRef.current) {
+    const rect = mapRef.current.getBoundingClientRect();
+    const maxLeft = rect.width - popupWidth - EDGE_PADDING;
+    const minLeft = EDGE_PADDING;
+    const adjusted = Math.min(Math.max(left, minLeft), Math.max(minLeft, maxLeft));
+    arrowLeft = Math.min(Math.max(popupPos.x - adjusted, 10), popupWidth - 10);
+    left = adjusted;
+  }
   return (
     <div
       ref={popupRef}
       style={{
         position: 'absolute',
-        left:
-          popupSide === 'right'
-            ? popupPos.x + 32
-            : popupSide === 'left'
-              ? popupPos.x - popupWidth - 32
-              : popupPos.x - popupWidth / 2,
+        left,
         top: popupSide === 'bottom' ? popupPos.y + 24 : popupPos.y - 24,
         minWidth: minPopupWidth,
         maxWidth: maxPopupWidth,
@@ -148,7 +161,7 @@ const FacilityPopup = React.memo(function FacilityPopup({
             zIndex: 999,
             position: 'absolute',
             top: -10,
-            left: '50%',
+            left: arrowLeft,
             transform: 'translateX(-50%)',
             width: 0,
             height: 0,
@@ -475,6 +488,7 @@ export function FacilityMap(props: StateFacilityProps) {
           stateData={stateData}
           locked={!!locked}
           popupRef={popupRef}
+          mapRef={mapRef}
           onClose={() => setLocked(null)}
         />
       )}

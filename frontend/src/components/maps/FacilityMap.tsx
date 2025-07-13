@@ -361,7 +361,6 @@ const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
                 }}
                 tabIndex={0}
                 onFocus={locked ? undefined : () => setSelectedState(abbrev)}
-                onBlur={locked ? undefined : () => setSelectedState(null)}
                 style={geoStyle}
               />
             );

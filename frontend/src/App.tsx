@@ -108,7 +108,6 @@ function AppWithUserContext() {
           }
         },
         before_send: (event) => {
-          console.info('before_send', event);
           if (!event) {
             return null;
           }

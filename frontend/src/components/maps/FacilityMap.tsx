@@ -135,9 +135,19 @@ const FacilityPopup = React.memo(function FacilityPopup({
 }) {
   const { width: windowWidth } = useWindowDimensions();
   const isSmallScreen = windowWidth < MOBILE_BREAKPOINT;
-  const containerWidth = mapRef.current
-    ? Math.min(windowWidth, mapRef.current.getBoundingClientRect().width)
-    : windowWidth;
+  const containerWidth = useMemo(() => {
+    try {
+      if (mapRef.current) {
+        const rect = mapRef.current.getBoundingClientRect();
+        return Math.min(windowWidth, rect.width);
+      }
+      return windowWidth;
+    } catch (e) {
+      // don't care if mapRef.current is null if there's a race condition and it switches while checking, just return windowWidth
+      return windowWidth;
+    }
+  }, [mapRef.current, windowWidth]);
+
   const horizontalPadding = popupSide === 'bottom' ? BOTTOM_EDGE_PADDING * 2 : EDGE_PADDING * 2;
   const popupFullWidth = containerWidth - horizontalPadding;
   const maxPopupWidth = Math.min(MAX_POPUP_WIDTH, popupFullWidth);
@@ -148,24 +158,38 @@ const FacilityPopup = React.memo(function FacilityPopup({
       : popupSide === 'left'
         ? popupPos.x - popupWidth - 32
         : popupPos.x - popupWidth / 2;
-  let left = initialLeft;
-  let arrowLeft: number | string = '50%';
-  if (popupSide === 'bottom' && mapRef.current) {
-    const rect = mapRef.current.getBoundingClientRect();
-    const padding = BOTTOM_EDGE_PADDING;
-    if (isSmallScreen) {
-      const adjusted = padding;
-      const width = popupFullWidth;
-      arrowLeft = Math.min(Math.max(popupPos.x - adjusted, 10), width - 10);
-      left = adjusted;
-    } else {
-      const maxLeft = Math.min(rect.width, windowWidth) - popupWidth - padding;
-      const minLeft = padding;
-      const adjusted = Math.min(Math.max(left, minLeft), Math.max(minLeft, maxLeft));
-      arrowLeft = Math.min(Math.max(popupPos.x - adjusted, 10), popupWidth - 10);
-      left = adjusted;
+  const { left, arrowLeft } = useMemo(() => {
+    let left = initialLeft;
+    let arrowLeft: number | string = '50%';
+    
+    if (popupSide === 'bottom') {
+      try {
+        if (mapRef.current) {
+          const rect = mapRef.current.getBoundingClientRect();
+          const padding = BOTTOM_EDGE_PADDING;
+          if (isSmallScreen) {
+            const adjusted = padding;
+            const width = popupFullWidth;
+            arrowLeft = Math.min(Math.max(popupPos.x - adjusted, 10), width - 10);
+            left = adjusted;
+          } else {
+            const maxLeft = Math.min(rect.width, windowWidth) - popupWidth - padding;
+            const minLeft = padding;
+            const adjusted = Math.min(Math.max(left, minLeft), Math.max(minLeft, maxLeft));
+            arrowLeft = Math.min(Math.max(popupPos.x - adjusted, 10), popupWidth - 10);
+            left = adjusted;
+          }
+        }
+      } catch (e) {
+        // don't care if mapRef.current is null if there's a race condition, just use default values
+        left = initialLeft;
+        arrowLeft = '50%';
+      }
     }
-  }
+    
+    return { left, arrowLeft };
+  }, [popupSide, initialLeft, popupPos.x, popupWidth, popupFullWidth, isSmallScreen, windowWidth, mapRef.current]);
+  
   return (
     <div
       ref={popupRef}
@@ -328,12 +352,17 @@ const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
                     : (e: React.PointerEvent<SVGPathElement>) => {
                         if (e.pointerType !== 'mouse') return;
                         setSelectedState(abbrev);
-                        if (mapRef.current) {
-                          const rect = mapRef.current.getBoundingClientRect();
-                          const relX = e.clientX - rect.left;
-                          const relY = e.clientY - rect.top;
-                          setPos({ x: relX, y: relY });
-                          checkPopupSide(relX);
+                        try {
+                          const rect = mapRef.current?.getBoundingClientRect();
+                          if (rect) {
+                            const relX = e.clientX - rect.left;
+                            const relY = e.clientY - rect.top;
+                            setPos({ x: relX, y: relY });
+                            checkPopupSide(relX);
+                          }
+                        } catch (e) {
+                          // just don't do anything if there's a race condition and mapRef.current is null
+                          console.info('race condition and mapRef.current is null in onPointerEnter');
                         }
                       }
                 }
@@ -342,12 +371,17 @@ const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
                     ? undefined
                     : (e: React.PointerEvent<SVGPathElement>) => {
                         if (e.pointerType !== 'mouse') return;
-                        if (mapRef.current) {
-                          const rect = mapRef.current.getBoundingClientRect();
-                          const relX = e.clientX - rect.left;
-                          const relY = e.clientY - rect.top;
-                          setPos({ x: relX, y: relY });
-                          checkPopupSide(relX);
+                        try {
+                          const rect = mapRef.current?.getBoundingClientRect();
+                          if (rect) {
+                            const relX = e.clientX - rect.left;
+                            const relY = e.clientY - rect.top;
+                            setPos({ x: relX, y: relY });
+                            checkPopupSide(relX);
+                          }
+                        } catch (e) {
+                          // just don't do anything if there's a race condition and mapRef.current is null
+                          console.info('race condition and mapRef.current is null in onPointerMove');
                         }
                       }
                 }
@@ -360,13 +394,18 @@ const FacilityMapGeographies = React.memo(function FacilityMapGeographies({
                       }
                 }
                 onClick={(e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
-                  if (mapRef.current) {
-                    const rect = mapRef.current.getBoundingClientRect();
-                    const relX = e.clientX - rect.left;
-                    const relY = e.clientY - rect.top;
-                    setLocked({ state: abbrev, pos: { x: relX, y: relY } });
-                    setSelectedState(null);
-                    checkPopupSide(relX);
+                  try {
+                    const rect = mapRef.current?.getBoundingClientRect();
+                    if (rect) {
+                      const relX = e.clientX - rect.left;
+                      const relY = e.clientY - rect.top;
+                      setLocked({ state: abbrev, pos: { x: relX, y: relY } });
+                      setSelectedState(null);
+                      checkPopupSide(relX);
+                    }
+                  } catch (e) {
+                    // just don't do anything if there's a race condition and mapRef.current is null
+                    console.info('race condition and mapRef.current is null in onClick');
                   }
                 }}
                 tabIndex={0}
@@ -498,17 +537,21 @@ export function FacilityMap(props: StateFacilityProps) {
         setPopupSide('bottom');
         return;
       }
-      if (mapRef.current) {
-        const rect = mapRef.current.getBoundingClientRect();
-        const maxWidth = Math.min(MAX_POPUP_WIDTH, windowWidth - 32);
-        const minWidth = Math.min(MIN_POPUP_WIDTH, windowWidth - 32);
-        if (x + maxWidth > rect.width - 16 && x - minWidth < 16) {
-          setPopupSide('bottom');
-        } else if (x + maxWidth > rect.width - 16) {
-          setPopupSide('left');
-        } else {
-          setPopupSide('right');
+      try {
+        const rect = mapRef.current?.getBoundingClientRect();
+        if (rect) {
+          const maxWidth = Math.min(MAX_POPUP_WIDTH, windowWidth - 32);
+          const minWidth = Math.min(MIN_POPUP_WIDTH, windowWidth - 32);
+          if (x + maxWidth > rect.width - 16 && x - minWidth < 16) {
+            setPopupSide('bottom');
+          } else if (x + maxWidth > rect.width - 16) {
+            setPopupSide('left');
+          } else {
+            setPopupSide('right');
+          }
         }
+      } catch (e) {
+        // just don't do anything if there's a race condition and mapRef.current is null
       }
     },
     [isSmallScreen, windowWidth],
@@ -516,27 +559,33 @@ export function FacilityMap(props: StateFacilityProps) {
 
   // Update popup width after render
   useEffect(() => {
-    if (popupRef.current && mapRef.current) {
-      const width = popupRef.current.offsetWidth;
-      setPopupWidth(width);
-      const rect = mapRef.current.getBoundingClientRect();
-      let left = 0;
-      const popupState = locked ? locked.state : selectedState;
-      const popupPos = locked ? locked.pos : pos;
-      if (popupSide === 'right') {
-        left = popupPos.x;
-      } else if (popupSide === 'left') {
-        left = popupPos.x - width;
+    try {
+      const popupCurrent = popupRef.current;
+      const mapCurrent = mapRef.current;
+      if (popupCurrent && mapCurrent) {
+        const width = popupCurrent.offsetWidth;
+        setPopupWidth(width);
+        const rect = mapCurrent.getBoundingClientRect();
+        let left = 0;
+        const popupState = locked ? locked.state : selectedState;
+        const popupPos = locked ? locked.pos : pos;
+        if (popupSide === 'right') {
+          left = popupPos.x;
+        } else if (popupSide === 'left') {
+          left = popupPos.x - width;
+        }
+        const EDGE_BUFFER = 0;
+        if (isSmallScreen) {
+          setPopupSide('bottom');
+        } else if (
+          (popupSide === 'right' || popupSide === 'left') &&
+          (left < EDGE_BUFFER || left + width > rect.width - EDGE_BUFFER)
+        ) {
+          setPopupSide('bottom');
+        }
       }
-      const EDGE_BUFFER = 0;
-      if (isSmallScreen) {
-        setPopupSide('bottom');
-      } else if (
-        (popupSide === 'right' || popupSide === 'left') &&
-        (left < EDGE_BUFFER || left + width > rect.width - EDGE_BUFFER)
-      ) {
-        setPopupSide('bottom');
-      }
+    } catch (e) {
+      // just don't do anything if there's a race condition and mapRef.current is null or popupRef.current is null inside the try block
     }
   }, [locked, selectedState, data, popupSide, pos.x, isSmallScreen]);
 
@@ -544,14 +593,19 @@ export function FacilityMap(props: StateFacilityProps) {
   useEffect(() => {
     if (!locked) return;
     function handleClick(e: MouseEvent | PointerEvent) {
-      if (popupRef.current) {
-        const target = e.target as Node;
-        const path = (e as any).composedPath?.() as Node[] | undefined;
-        const inPopup =
-          popupRef.current.contains(target) || (path ? path.includes(popupRef.current) : false);
-        if (!inPopup) {
-          setLocked(null);
+      try {
+        const popupCurrent = popupRef.current;
+        if (popupCurrent) {
+          const target = e.target as Node;
+          const path = (e as any).composedPath?.() as Node[] | undefined;
+          const inPopup =
+            popupCurrent.contains(target) || (path ? path.includes(popupCurrent) : false);
+          if (!inPopup) {
+            setLocked(null);
+          }
         }
+      } catch (e) {
+        // just don't do anything if there's a race condition and popupRef.current is null
       }
     }
     document.addEventListener('pointerdown', handleClick);

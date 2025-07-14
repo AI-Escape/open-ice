@@ -107,6 +107,30 @@ function AppWithUserContext() {
             ph.set_config({ disable_session_recording: true });
           }
         },
+        before_send: (event) => {
+          console.info('before_send', event);
+          if (!event) {
+            return null;
+          }
+          // capture all non-exceptions
+          if (event.event !== '$exception') {
+            return event;
+          }
+          const exceptionList = event.properties["$exception_list"] || []
+          const exception = exceptionList.length > 0 ? exceptionList[0] : null;
+          if (!exception) {
+            return event;
+          }
+          // filter out errors that include ".current is null"
+          if (exception["type"] === "TypeError" && exception["value"] && exception["value"].includes(".current is null")) {
+            return null
+          }
+          // filter out errors that include "ResizeObserver loop completed with undelivered notifications."
+          if (exception["type"] === "Error" && exception["value"] && exception["value"].includes("ResizeObserver loop completed with undelivered notifications.")) {
+            return null
+          }
+          return event;
+        },
       }}
     >
       <PersistQueryClientProvider

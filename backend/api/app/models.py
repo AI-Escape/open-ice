@@ -60,7 +60,9 @@ class TaskRead(TaskBase):
 class BaseDetentionStatsReport(SQLModel):
     source_name: str = Field(index=True)  # e.g. FY25_detentionStats06202025
     fiscal_year: str = Field(index=True)  # e.g. "FY2025" (from name)
-    publication_date: datetime = Field(index=True)  # e.g. 2025-06-20 (from name)
+    publication_date: datetime = Field(
+        index=True
+    )  # e.g. 2025-06-20 (from name)
     publication_month: str = Field(index=True)  # Jan, Feb, Mar, etc.
     publication_year: int = Field(index=True)  # 2025
     raw_bytes: bytes = Field(default=None)
@@ -109,7 +111,9 @@ class AverageDailyPopulation(BaseAverageDailyPopulation, table=True):
     id: Optional[int] = Field(primary_key=True)
     uuid: Optional[UUID] = uuid()
     created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
-    report_id: int = Field(foreign_key="detention_stats_reports.id", index=True)
+    report_id: int = Field(
+        foreign_key="detention_stats_reports.id", index=True
+    )
     report: DetentionStatsReport = Relationship(
         back_populates="average_daily_populations"
     )
@@ -130,8 +134,12 @@ class AverageStayLength(BaseAverageStayLength, table=True):
     id: Optional[int] = Field(primary_key=True)
     uuid: Optional[UUID] = uuid()
     created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
-    report_id: int = Field(foreign_key="detention_stats_reports.id", index=True)
-    report: DetentionStatsReport = Relationship(back_populates="average_stay_lengths")
+    report_id: int = Field(
+        foreign_key="detention_stats_reports.id", index=True
+    )
+    report: DetentionStatsReport = Relationship(
+        back_populates="average_stay_lengths"
+    )
 
 
 class BaseBookOutRelease(SQLModel):
@@ -149,8 +157,12 @@ class BookOutRelease(BaseBookOutRelease, table=True):
     id: Optional[int] = Field(primary_key=True)
     uuid: Optional[UUID] = uuid()
     created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
-    report_id: int = Field(foreign_key="detention_stats_reports.id", index=True)
-    report: DetentionStatsReport = Relationship(back_populates="book_out_releases")
+    report_id: int = Field(
+        foreign_key="detention_stats_reports.id", index=True
+    )
+    report: DetentionStatsReport = Relationship(
+        back_populates="book_out_releases"
+    )
 
 
 class BaseBookIn(SQLModel):
@@ -167,7 +179,9 @@ class BookIn(BaseBookIn, table=True):
     id: Optional[int] = Field(primary_key=True)
     uuid: Optional[UUID] = uuid()
     created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
-    report_id: int = Field(foreign_key="detention_stats_reports.id", index=True)
+    report_id: int = Field(
+        foreign_key="detention_stats_reports.id", index=True
+    )
     report: DetentionStatsReport = Relationship(back_populates="book_ins")
 
 
@@ -182,7 +196,9 @@ class ProcessingDisposition(BaseProcessingDisposition, table=True):
     id: Optional[int] = Field(primary_key=True)
     uuid: Optional[UUID] = uuid()
     created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
-    report_id: int = Field(foreign_key="detention_stats_reports.id", index=True)
+    report_id: int = Field(
+        foreign_key="detention_stats_reports.id", index=True
+    )
     report: DetentionStatsReport = Relationship(
         back_populates="processing_dispositions"
     )
@@ -214,7 +230,9 @@ class BaseFacility(SQLModel):
     mandatory: Optional[float] = Field(default=None, index=True)
     guaranteed_minimum: Optional[float] = Field(default=None, index=True)
     last_inspection_type: Optional[str] = Field(default=None, index=True)
-    last_inspection_end_date: Optional[datetime] = Field(default=None, index=True)
+    last_inspection_end_date: Optional[datetime] = Field(
+        default=None, index=True
+    )
     # TODO need to re-name this column
     pending_fy25_inspection: Optional[str] = Field(default=None, index=True)
     last_inspection_standard: Optional[str] = Field(default=None, index=True)
@@ -226,7 +244,9 @@ class Facility(BaseFacility, table=True):
     id: Optional[int] = Field(primary_key=True)
     uuid: Optional[UUID] = uuid()
     created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
-    report_id: int = Field(foreign_key="detention_stats_reports.id", index=True)
+    report_id: int = Field(
+        foreign_key="detention_stats_reports.id", index=True
+    )
     report: DetentionStatsReport = Relationship(back_populates="facilities")
 
 
@@ -257,8 +277,12 @@ class FacilityRead(BaseFacility):
 # for chat
 class ChatMessageBase(SQLModel):
     type: str  # function_call, function_call_output, text, etc.
-    name: Optional[str] = Field(default=None)  # name of function for function_call
-    arguments: Optional[str] = Field(default=None)  # json text for function_call
+    name: Optional[str] = Field(
+        default=None
+    )  # name of function for function_call
+    arguments: Optional[str] = Field(
+        default=None
+    )  # json text for function_call
     call_id: Optional[str] = Field(
         default=None
     )  # id of function_call for function_call_output
@@ -328,3 +352,26 @@ class ChatRead(ChatBase):
     uuid: UUID
     created_at: datetime
     messages: list[ChatMessageRead]
+
+
+class BaseDetainmentExperience(SQLModel):
+    source_name: str = Field(index=True)
+    source_url: str
+    quote: str
+    reported_at: datetime = Field(index=True)
+
+
+class DetainmentExperience(BaseDetainmentExperience, table=True):
+    __tablename__ = "detainment_experiences"
+
+    id: Optional[int] = Field(primary_key=True)
+    uuid: Optional[UUID] = uuid()
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+    updated_at: datetime = Field(default_factory=datetime.utcnow, index=True)
+
+
+class DetainmentExperienceRead(BaseDetainmentExperience):
+    id: int
+    uuid: UUID
+    created_at: datetime
+    updated_at: datetime

@@ -82,7 +82,7 @@ export default function ChatWidget() {
         </>
       )}
       {!open && (
-        <div className="fixed bottom-[2dvh] right-[2dvh] z-3000">
+        <div className="fixed bottom-[4dvh] right-[2dvh] z-3000">
           <Button variant="inline-link" onClick={() => setOpen(true)}>
             <div className="relative group">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-300" />

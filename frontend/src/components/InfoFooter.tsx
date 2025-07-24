@@ -1,8 +1,16 @@
 import { Box, Link } from '@cloudscape-design/components';
+import { useState } from 'react';
+import useRecentExperiences from '../common/hooks/experiences';
 
-export default function Footer() {
+export default function InfoFooter() {
+  const [paused, setPaused] = useState(false);
+  const experiencesQuery = useRecentExperiences();
+
+  const experiences = experiencesQuery.data || [];
+
   return (
-    <footer role="contentinfo" className="flex justify-center items-end w-full p-4 mt-10">
+    <>
+      <footer role="contentinfo" className="flex justify-center items-end w-full p-4 mt-10 pb-16">
       <Box variant="p" textAlign="center" color="text-status-inactive" fontSize="body-s">
         <Box variant="p" textAlign="center" color="text-status-inactive" fontSize="body-s">
           Copyright © {new Date().getFullYear()} AI Escape LLC. All rights reserved.
@@ -80,5 +88,6 @@ export default function Footer() {
         </Box>
       </Box>
     </footer>
+    </>
   );
 }

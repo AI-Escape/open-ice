@@ -8,6 +8,39 @@ body {
   overflow-x: hidden;
 }
 
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }    /* start at 0% */
+  to   { transform: translateX(-50%); } /* slide left by half (because of duplication) */
+}
+
+.news-bar {
+  background: #1a202c;
+  color: #fff;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.ticker {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  animation: ticker-scroll var(--ticker-duration, 30s) linear infinite;
+}
+
+/* pause on hover/focus */
+.ticker.paused { animation-play-state: paused; }
+
+/* visual separator “ | ” */
+.ticker > *:not(:last-child)::after {
+  content: " |";
+  margin: 0 2rem;
+  color: currentColor;
+}
+
+
 div:has(nav[aria-label="Side navigation"]) {
   z-index: 800 !important;
 }

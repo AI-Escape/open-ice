@@ -9,17 +9,13 @@ body {
 }
 
 @keyframes ticker-scroll {
-  0% {
-    transform: translateX(100%);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
+  from { transform: translateX(0); }    /* start at 0% */
+  to   { transform: translateX(-50%); } /* slide left by half (because of duplication) */
 }
 
 .news-bar {
-  background-color: #1a202c;
-  color: #ffffff;
+  background: #1a202c;
+  color: #fff;
   position: fixed;
   bottom: 0;
   width: 100%;
@@ -28,14 +24,22 @@ body {
 }
 
 .ticker {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   white-space: nowrap;
-  animation: ticker-scroll 25s linear infinite;
+  animation: ticker-scroll var(--ticker-duration, 30s) linear infinite;
 }
 
-.ticker.paused {
-  animation-play-state: paused;
+/* pause on hover/focus */
+.ticker.paused { animation-play-state: paused; }
+
+/* visual separator “ | ” */
+.ticker > *:not(:last-child)::after {
+  content: " |";
+  margin: 0 2rem;
+  color: currentColor;
 }
+
 
 div:has(nav[aria-label="Side navigation"]) {
   z-index: 800 !important;

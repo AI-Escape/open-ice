@@ -7,7 +7,8 @@ import {
 import { useContext } from 'react';
 
 import { LocalNavigation, Breadcrumbs, NavigationContext } from '../common/navigation';
-import Footer from './Footer';
+import InfoFooter from './InfoFooter';
+import NewsBanner from './NewsBanner';
 
 export type ViewLayoutProps = {
   header?: React.ReactNode;
@@ -36,7 +37,7 @@ export function ViewLayout(props: ViewLayoutProps) {
             headerVariant={props.headerVariant}
           >
             {props.children}
-            <Footer />
+            <InfoFooter />
             {/* a div with like 300 vertical height to add height to site below footer */}
             <div style={{ height: '500px' }}></div>
           </ContentLayout>
@@ -51,6 +52,7 @@ export function ViewLayout(props: ViewLayoutProps) {
         onNavigationChange={(event) => setNavigationOpen(event.detail.open)}
         maxContentWidth={props.maxContentWidth}
       />
+      <NewsBanner />
     </div>
   );
 }

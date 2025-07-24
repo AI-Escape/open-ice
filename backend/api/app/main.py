@@ -15,6 +15,7 @@ from app.routers import (
     booking,
     chat,
     facilities,
+    experiences,
 )
 from app.limits import limiter
 from app.utils.lifespan import lifespan
@@ -54,6 +55,7 @@ app.include_router(disposition.router)
 app.include_router(booking.router)
 app.include_router(chat.router)
 app.include_router(facilities.router)
+app.include_router(experiences.router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -75,7 +77,9 @@ class CatchServerErrorMiddleware(BaseHTTPMiddleware):
                 posthog.capture_exception(exc)
             return JSONResponse(
                 status_code=500,
-                content={"detail": "Internal server error, please try again later"},
+                content={
+                    "detail": "Internal server error, please try again later"
+                },
                 headers={
                     "Access-Control-Allow-Origin": "*",
                     "Access-Control-Allow-Credentials": "true",

@@ -1,8 +1,40 @@
 import { Box, Link } from '@cloudscape-design/components';
+import { useState } from 'react';
+import useRecentExperiences from '../common/hooks/experiences';
 
 export default function Footer() {
+  const [paused, setPaused] = useState(false);
+  const experiencesQuery = useRecentExperiences();
+
+  const experiences = experiencesQuery.data || [];
+
   return (
-    <footer role="contentinfo" className="flex justify-center items-end w-full p-4 mt-10">
+    <>
+      <div
+        className={`news-bar ${paused ? 'paused' : ''}`}
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
+        tabIndex={0}
+      >
+        <div className={`ticker ${paused ? 'paused' : ''}`}>
+          {experiences.map((exp) => (
+            <span key={exp.uuid} className="mx-4">
+              “{exp.quote}” -{' '}
+              <a
+                href={exp.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                {exp.source_name}
+              </a>
+            </span>
+          ))}
+        </div>
+      </div>
+      <footer role="contentinfo" className="flex justify-center items-end w-full p-4 mt-10 pb-16">
       <Box variant="p" textAlign="center" color="text-status-inactive" fontSize="body-s">
         <Box variant="p" textAlign="center" color="text-status-inactive" fontSize="body-s">
           Copyright © {new Date().getFullYear()} AI Escape LLC. All rights reserved.
@@ -80,5 +112,6 @@ export default function Footer() {
         </Box>
       </Box>
     </footer>
+    </>
   );
 }

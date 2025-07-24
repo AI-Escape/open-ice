@@ -8,6 +8,35 @@ body {
   overflow-x: hidden;
 }
 
+@keyframes ticker-scroll {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.news-bar {
+  background-color: #1a202c;
+  color: #ffffff;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.ticker {
+  display: inline-block;
+  white-space: nowrap;
+  animation: ticker-scroll 25s linear infinite;
+}
+
+.ticker.paused {
+  animation-play-state: paused;
+}
+
 div:has(nav[aria-label="Side navigation"]) {
   z-index: 800 !important;
 }

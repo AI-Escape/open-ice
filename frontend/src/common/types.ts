@@ -311,3 +311,14 @@ export type Facility = {
   last_inspection_standard?: string;
   last_final_rating?: string;
 };
+
+export type DetainmentExperience = {
+  id: number;
+  uuid: string;
+  source_name: string;
+  source_url: string;
+  quote: string;
+  reported_at: string;
+  created_at: string;
+  updated_at: string;
+};

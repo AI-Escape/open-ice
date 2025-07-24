@@ -12,6 +12,7 @@ import {
 import { CurrencyInput } from '../inputs/CurrencyInput';
 import { RoundedInput } from '../inputs/RoundedInput';
 import { formatCurrencyFriendly } from '../../common/formatting/formatCurrency';
+import MajorHeader from '../MajorHeader';
 
 export type EconomicImpactCalculatorProps = {
   defaultWage: number;
@@ -126,17 +127,9 @@ export function EconomicImpactCalculator(props: EconomicImpactCalculatorProps) {
   return (
     <Container
       header={
-        <Header variant="h1" description="What does it cost to be detained?">
-          <Box
-            variant="span"
-            color="text-status-info"
-            fontSize="heading-xl"
-            textAlign="center"
-            fontWeight="bold"
-          >
-            <div>Economic Impact</div>
-          </Box>
-        </Header>
+        <MajorHeader description="What does it cost to be detained?">
+          Economic Impact
+        </MajorHeader>
       }
       footer={
         <SpaceBetween direction="vertical" size="m">

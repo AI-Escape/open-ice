@@ -1,6 +1,5 @@
 import { Box, PieChart } from '@cloudscape-design/components';
 import {
-  CRIMINALITY_DESCRIPTIONS,
   Facility,
   THREAT_LEVEL_COLORS,
   THREAT_LEVEL_DESCRIPTIONS,

@@ -1,6 +1,7 @@
 import { Box, Container, Header } from '@cloudscape-design/components';
 import { AverageDailyPopulationPieChart } from '../graphs/AverageDailyPopulationPieChart';
 import { AverageDailyPopulation } from '../../common/types';
+import MajorHeader from '../MajorHeader';
 
 export type DetaineeCriminalityStatsProps = {
   data: AverageDailyPopulation[];
@@ -13,17 +14,9 @@ export function DetaineeCriminalityStats(props: DetaineeCriminalityStatsProps) {
   return (
     <Container
       header={
-        <Header variant="h1" description="Who is being detained?">
-          <Box
-            variant="span"
-            color="text-status-info"
-            fontSize="heading-xl"
-            textAlign="center"
-            fontWeight="bold"
-          >
-            <div>Detainee Criminal Status</div>
-          </Box>
-        </Header>
+        <MajorHeader description="Who is being detained?">
+          Detainee Characteristics
+        </MajorHeader>
       }
       fitHeight
     >

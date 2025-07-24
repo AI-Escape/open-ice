@@ -4,6 +4,8 @@ import { useMemo } from 'react';
 import { MetricComparison } from './metrics';
 import { AverageDailyPopulationGraph } from '../graphs/AverageDailyPopulationGraph';
 import { useCurrentPopulationGrouped } from '../../common/hooks/population';
+import { CenteredHeader } from '../CenteredHeader';
+import { CenteredSecondaryHeader } from '../CenteredSecondaryHeader';
 
 export type AverageDailyPopulationStatsProps = {
   data: AverageDailyPopulation[];
@@ -33,41 +35,9 @@ export function AverageDailyPopulationStats(props: AverageDailyPopulationStatsPr
         >
           <MetricComparison
             header={
-              <Header variant="h2">
-                <Box
-                  variant="span"
-                  color="text-status-info"
-                  fontSize="heading-l"
-                  textAlign="center"
-                  fontWeight="bold"
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                  >
-                    ICE
-                  </div>
-                </Box>
-                <Box
-                  variant="span"
-                  color="text-body-secondary"
-                  fontSize="heading-xs"
-                  textAlign="center"
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                  >
-                    Immigration and Customs Enforcement
-                  </div>
-                </Box>
-              </Header>
+              <CenteredSecondaryHeader description="Immigration and Customs Enforcement">
+                ICE
+              </CenteredSecondaryHeader>
             }
             value={organizedData.ICE.lastData.population}
             unit="people"
@@ -81,41 +51,9 @@ export function AverageDailyPopulationStats(props: AverageDailyPopulationStatsPr
           </MetricComparison>
           <MetricComparison
             header={
-              <Header variant="h2">
-                <Box
-                  variant="span"
-                  color="text-status-info"
-                  fontSize="heading-l"
-                  textAlign="center"
-                  fontWeight="bold"
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                  >
-                    CBP
-                  </div>
-                </Box>
-                <Box
-                  variant="span"
-                  color="text-body-secondary"
-                  fontSize="heading-xs"
-                  textAlign="center"
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                  >
-                    Customs and Border Protection
-                  </div>
-                </Box>
-              </Header>
+              <CenteredSecondaryHeader description="Customs and Border Protection">
+                CBP
+              </CenteredSecondaryHeader>
             }
             value={organizedData.CBP.lastData.population}
             unit="people"
@@ -132,36 +70,9 @@ export function AverageDailyPopulationStats(props: AverageDailyPopulationStatsPr
     >
       <MetricComparison
         header={
-          <Header variant="h1">
-            <Box
-              variant="span"
-              color="text-status-info"
-              fontSize="heading-xl"
-              textAlign="center"
-              fontWeight="bold"
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                Total Daily Population
-              </div>
-            </Box>
-            <Box variant="span" color="text-body-secondary" fontSize="heading-s" textAlign="center">
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                How many people are detained?
-              </div>
-            </Box>
-          </Header>
+          <CenteredHeader description="How many people are detained?">
+            Total Daily Population
+          </CenteredHeader>
         }
         value={organizedData.Average.lastData.population}
         unit="people"

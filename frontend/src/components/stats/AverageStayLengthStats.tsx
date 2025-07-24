@@ -4,6 +4,8 @@ import { useMemo } from 'react';
 import { MetricComparison } from './metrics';
 import { AverageStayLengthGraph } from '../graphs/AverageStayLengthGraph';
 import { useCurrentStayLengthGrouped } from '../../common/hooks/stay';
+import { CenteredSecondaryHeader } from '../CenteredSecondaryHeader';
+import { CenteredHeader } from '../CenteredHeader';
 
 export type AverageStayLengthStatsProps = {
   data: AverageStayLength[];
@@ -33,41 +35,9 @@ export function AverageStayLengthStats(props: AverageStayLengthStatsProps) {
         >
           <MetricComparison
             header={
-              <Header variant="h2">
-                <Box
-                  variant="span"
-                  color="text-status-info"
-                  fontSize="heading-l"
-                  textAlign="center"
-                  fontWeight="bold"
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                  >
-                    ICE
-                  </div>
-                </Box>
-                <Box
-                  variant="span"
-                  color="text-body-secondary"
-                  fontSize="heading-xs"
-                  textAlign="center"
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                  >
-                    Immigration and Customs Enforcement
-                  </div>
-                </Box>
-              </Header>
+              <CenteredSecondaryHeader description="Immigration and Customs Enforcement">
+                ICE
+              </CenteredSecondaryHeader>
             }
             formatter={(x) => {
               return x.toFixed(1);
@@ -84,41 +54,9 @@ export function AverageStayLengthStats(props: AverageStayLengthStatsProps) {
           </MetricComparison>
           <MetricComparison
             header={
-              <Header variant="h2">
-                <Box
-                  variant="span"
-                  color="text-status-info"
-                  fontSize="heading-l"
-                  textAlign="center"
-                  fontWeight="bold"
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                  >
-                    CBP
-                  </div>
-                </Box>
-                <Box
-                  variant="span"
-                  color="text-body-secondary"
-                  fontSize="heading-xs"
-                  textAlign="center"
-                >
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                  >
-                    Customs and Border Protection
-                  </div>
-                </Box>
-              </Header>
+              <CenteredSecondaryHeader description="Customs and Border Protection">
+                CBP
+              </CenteredSecondaryHeader>
             }
             formatter={(x) => {
               return x.toFixed(1);
@@ -138,36 +76,9 @@ export function AverageStayLengthStats(props: AverageStayLengthStatsProps) {
     >
       <MetricComparison
         header={
-          <Header variant="h1">
-            <Box
-              variant="span"
-              color="text-status-info"
-              fontSize="heading-xl"
-              textAlign="center"
-              fontWeight="bold"
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                Average Detainment Period
-              </div>
-            </Box>
-            <Box variant="span" color="text-body-secondary" fontSize="heading-s" textAlign="center">
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                How long are people being detained?
-              </div>
-            </Box>
-          </Header>
+          <CenteredHeader description="How long are people being detained?">
+            Average Detainment Period
+          </CenteredHeader>
         }
         formatter={(x) => {
           return x.toFixed(1);

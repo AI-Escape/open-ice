@@ -76,12 +76,29 @@ export const BOOK_OUT_DETAILS: Record<BookOutReason, string | null> = {
 
 export const CRIMINALITY_DESCRIPTIONS: Record<Criminality, string | null> = {
   'Convicted Criminal':
-    'People who have been convicted of a crime, with no differentiation between misdemeanors and felonies',
-  'Pending Criminal Charges': 'People with pending criminal charges, but have not been convicted',
+    'People who have been convicted of a crime, with no differentiation between misdemeanors (like jaywalking) and felonies',
+  'Pending Criminal Charges':
+    'People charged with a crime or waiting to be charged, but have not been convicted',
   'Other Immigration Violator':
-    'People who are not U.S. citizens, but have been arrested for a suspected immigration violation',
+    'People who have been arrested for a suspected civil immigration infraction. Civil infractions (like a speeding ticket) are not criminal offenses.',
   Average: null,
   Total: null,
+};
+
+export const CRIMINALITY_NAMES: Record<Criminality, string> = {
+  'Convicted Criminal': 'Criminally Convicted',
+  'Pending Criminal Charges': 'Suspected of a Crime',
+  'Other Immigration Violator': 'Suspected of a Civil Infraction',
+  Average: 'Average',
+  Total: 'Total',
+};
+
+export const CRIMINALITY_NAMES_INVERSE: Record<string, Criminality> = {
+  'Criminally Convicted': 'Convicted Criminal',
+  'Suspected of a Crime': 'Pending Criminal Charges',
+  'Suspected of a Civil Infraction': 'Other Immigration Violator',
+  Average: 'Average',
+  Total: 'Total',
 };
 
 export const BOOK_OUT_REASON_COLORS: Record<BookOutReason, string> = {

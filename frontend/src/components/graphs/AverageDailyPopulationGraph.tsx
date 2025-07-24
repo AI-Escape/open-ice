@@ -4,6 +4,8 @@ import {
   Criminality,
   CRIMINALITY_COLORS,
   CRIMINALITY_DESCRIPTIONS,
+  CRIMINALITY_NAMES,
+  CRIMINALITY_NAMES_INVERSE,
   CRIMINALITY_ORDER,
 } from '../../common/types';
 import { useMemo, useState } from 'react';
@@ -23,7 +25,7 @@ export function AverageDailyPopulationGraph(props: AverageDailyPopulationGraphPr
       .filter((key) => key !== 'Average')
       .map((key) => {
         return {
-          title: key,
+          title: CRIMINALITY_NAMES[key as keyof typeof CRIMINALITY_NAMES],
           data: groupedData[key as keyof typeof groupedData].map((item) => ({
             x: new Date(item.timestamp),
             y: Math.round(item.population),
@@ -37,8 +39,8 @@ export function AverageDailyPopulationGraph(props: AverageDailyPopulationGraphPr
       }) as MixedLineBarChartProps.BarDataSeries<Date>[];
     items.sort((a, b) => {
       return (
-        CRIMINALITY_ORDER.indexOf(a.title as Criminality) -
-        CRIMINALITY_ORDER.indexOf(b.title as Criminality)
+        CRIMINALITY_ORDER.indexOf(CRIMINALITY_NAMES_INVERSE[a.title] as Criminality) -
+        CRIMINALITY_ORDER.indexOf(CRIMINALITY_NAMES_INVERSE[b.title] as Criminality)
       );
     });
     return items;
@@ -50,9 +52,9 @@ export function AverageDailyPopulationGraph(props: AverageDailyPopulationGraphPr
 
   const dateTotals = useMemo(() => {
     const data = {} as Record<string, number>;
-    for (const key of Object.keys(groupedData)) {
+    for (const name of visibleSeries) {
+      const key = CRIMINALITY_NAMES_INVERSE[name];
       if (key === 'Average') continue;
-      if (!visibleSeries.includes(key)) continue;
       for (const item of groupedData[key as keyof typeof groupedData]) {
         data[new Date(item.timestamp).toISOString()] =
           (data[new Date(item.timestamp).toISOString()] || 0) + Math.round(item.population);
@@ -91,9 +93,9 @@ export function AverageDailyPopulationGraph(props: AverageDailyPopulationGraphPr
               <Box variant="span" fontSize="heading-xs" fontWeight="normal">
                 {series.title}
               </Box>
-              {CRIMINALITY_DESCRIPTIONS[series.title as Criminality] && (
+              {CRIMINALITY_DESCRIPTIONS[CRIMINALITY_NAMES_INVERSE[series.title] as Criminality] && (
                 <Box variant="span" fontSize="body-s" color="text-body-secondary">
-                  {CRIMINALITY_DESCRIPTIONS[series.title as Criminality]}
+                  {CRIMINALITY_DESCRIPTIONS[CRIMINALITY_NAMES_INVERSE[series.title] as Criminality]}
                 </Box>
               )}
             </div>
@@ -106,7 +108,7 @@ export function AverageDailyPopulationGraph(props: AverageDailyPopulationGraphPr
         setVisibleSeries(visibleSeries.map((series) => series.title));
       }}
       detailPopoverSize="large"
-      legendTitle="Criminal Status of Detainees"
+      legendTitle="Detainee Characteristics"
       emphasizeBaselineAxis
       detailPopoverFooter={(x) => {
         const total = dateTotals[x.toISOString()];

@@ -11,6 +11,7 @@ import { useMemo } from 'react';
 import { MetricComparison } from './metrics';
 import { BookOutReleaseGraph } from '../graphs/BookOutReleaseGraph';
 import { useCurrentReleaseGrouped } from '../../common/hooks/release';
+import MajorHeader from '../MajorHeader';
 
 export type BookOutReleaseStatsProps = {
   data: BookOutRelease[];
@@ -30,17 +31,9 @@ export function BookOutReleaseStats(props: BookOutReleaseStatsProps) {
 
   return (
     <SpaceBetween direction="vertical" size="m">
-      <Header variant="h1" description="How are detainees being released?">
-        <Box
-          variant="span"
-          color="text-status-info"
-          fontSize="heading-xl"
-          textAlign="center"
-          fontWeight="bold"
-        >
-          <div>Release of Detainees</div>
-        </Box>
-      </Header>
+      <MajorHeader description="How are detainees being released?">
+        Release of Detainees
+      </MajorHeader>
       <BookOutReleaseGraph groupedData={organizedData} />
     </SpaceBetween>
   );

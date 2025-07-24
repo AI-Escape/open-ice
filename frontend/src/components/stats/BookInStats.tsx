@@ -2,6 +2,7 @@ import { Box, Container, Header, SpaceBetween } from '@cloudscape-design/compone
 import { BookIn } from '../../common/types';
 import { BookInGraph } from '../graphs/BookInGraph';
 import { useCurrentBookingGrouped } from '../../common/hooks/booking';
+import MajorHeader from '../MajorHeader';
 
 export type BookInStatsProps = {
   data: BookIn[];
@@ -15,17 +16,9 @@ export function BookInStats(props: BookInStatsProps) {
 
   return (
     <SpaceBetween direction="vertical" size="m">
-      <Header variant="h1" description="How many people are being arrested?">
-        <Box
-          variant="span"
-          color="text-status-info"
-          fontSize="heading-xl"
-          textAlign="center"
-          fontWeight="bold"
-        >
-          <div>Arrests by Agency</div>
-        </Box>
-      </Header>
+      <MajorHeader description="How many people are being arrested?">
+        Arrests by Agency
+      </MajorHeader>
       <BookInGraph groupedData={organizedData} />
     </SpaceBetween>
   );

@@ -4,6 +4,8 @@ import {
   Criminality,
   CRIMINALITY_COLORS,
   CRIMINALITY_DESCRIPTIONS,
+  CRIMINALITY_NAMES,
+  CRIMINALITY_NAMES_INVERSE,
   CRIMINALITY_ORDER,
 } from '../../common/types';
 import { useMemo, useState } from 'react';
@@ -23,7 +25,7 @@ export function AverageStayLengthGraph(props: AverageStayLengthGraphProps) {
       // .filter((key) => key !== 'Average')
       .map((key) => {
         return {
-          title: key,
+          title: CRIMINALITY_NAMES[key as keyof typeof CRIMINALITY_NAMES],
           data: groupedData[key as keyof typeof groupedData].map((item) => ({
             x: new Date(item.timestamp),
             y: item.length_of_stay,
@@ -37,8 +39,8 @@ export function AverageStayLengthGraph(props: AverageStayLengthGraphProps) {
       }) as MixedLineBarChartProps.LineDataSeries<Date>[];
     items.sort((a, b) => {
       return (
-        CRIMINALITY_ORDER.indexOf(a.title as Criminality) -
-        CRIMINALITY_ORDER.indexOf(b.title as Criminality)
+        CRIMINALITY_ORDER.indexOf(CRIMINALITY_NAMES_INVERSE[a.title] as Criminality) -
+        CRIMINALITY_ORDER.indexOf(CRIMINALITY_NAMES_INVERSE[b.title] as Criminality)
       );
     });
     return items;
@@ -81,9 +83,9 @@ export function AverageStayLengthGraph(props: AverageStayLengthGraphProps) {
               <Box variant="span" fontSize="heading-xs" fontWeight="normal">
                 {series.title}
               </Box>
-              {CRIMINALITY_DESCRIPTIONS[series.title as Criminality] && (
+              {CRIMINALITY_DESCRIPTIONS[CRIMINALITY_NAMES_INVERSE[series.title] as Criminality] && (
                 <Box variant="span" fontSize="body-s" color="text-body-secondary">
-                  {CRIMINALITY_DESCRIPTIONS[series.title as Criminality]}
+                  {CRIMINALITY_DESCRIPTIONS[CRIMINALITY_NAMES_INVERSE[series.title] as Criminality]}
                 </Box>
               )}
             </div>
@@ -92,7 +94,7 @@ export function AverageStayLengthGraph(props: AverageStayLengthGraphProps) {
         };
       }}
       detailPopoverSize="large"
-      legendTitle="Criminal Status of Detainees"
+      legendTitle="Detainee Characteristics"
       onFilterChange={({ detail }) => {
         const visibleSeries = detail.visibleSeries;
         setVisibleSeries(visibleSeries.map((series) => series.title));

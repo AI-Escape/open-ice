@@ -1,3 +1,4 @@
+
 # Open ICE API
 
 A FastAPI-based service for processing and serving ICE detention statistics data.
@@ -62,11 +63,8 @@ docker-compose exec web alembic upgrade head
 ### 5. Import data
 
 ```bash
-# Access the web container shell
-docker exec -it open-ice-api-web-1 sh
-
 # Run the data import script
-docker-compose exec web python3.13 -m app.scripts.import_data --file_path app/files/data/FY25_detentionStats07072025.xlsx
+docker-compose exec web python3.13 -m app.scripts.import_data --file_path app/files/data/FY25_detentionStats08012025.xlsx
 ```
 
 ## Development

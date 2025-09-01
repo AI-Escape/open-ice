@@ -64,7 +64,7 @@ docker-compose exec web alembic upgrade head
 
 ```bash
 # Run the data import script
-docker-compose exec web python3.13 -m app.scripts.import_data --file_path app/files/data/FY25_detentionStats08012025.xlsx
+docker-compose exec web python3.13 -m app.scripts.import_data --file_path app/files/data/FY25_detentionStats08292025.xlsx
 ```
 
 ## Development
@@ -117,6 +117,20 @@ python3.13 -m app.scripts.import_data
 ```
 
 The import script expects Excel files to be placed in `api/app/files/data/` directory.
+
+### Clear Database
+
+```sql
+TRUNCATE TABLE 
+average_daily_population,
+average_stay_length,
+book_in,
+book_out_release,
+detention_stats_reports,
+facilities,
+processing_disposition
+CASCADE;
+```
 
 ### API Endpoints
 

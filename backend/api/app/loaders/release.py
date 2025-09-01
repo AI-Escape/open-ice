@@ -1,5 +1,6 @@
 from pandas import DataFrame
 from sqlmodel import SQLModel
+import pandas as pd
 from app.loaders.common import ICEDataLoader, month_end_for_fy
 from app.models import BookOutRelease, DetentionStatsReport
 
@@ -31,7 +32,12 @@ class BookOutReleaseLoader(ICEDataLoader):
                 current_reason = reason
 
             for month in df.columns[2:]:
-                releases = int(row[month])
+                value = row[month]
+                # check if value is NaN or None and set to 0
+                if pd.isna(value) or value is None:
+                    releases = 0
+                else:
+                    releases = int(value)
                 stat_range = "month"
 
                 if month == "Total":

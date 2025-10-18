@@ -103,5 +103,3 @@ jobs:
           docker compose down || true
           docker compose up -d
           EOF
-
-          EOF

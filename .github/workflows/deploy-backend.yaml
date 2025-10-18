@@ -60,15 +60,33 @@ jobs:
             | sudo tee /usr/local/lib/docker/cli-plugins/docker-compose >/dev/null
           sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
-          # --- Buildx + BuildKit (fixes the 'unknown flag: --allow') ---
-          # Install/upgrade Buildx plugin explicitly (idempotent)
-          BUILDX_URL="https://github.com/docker/buildx/releases/latest/download/buildx-linux-$(uname -m)"
+          # --- Buildx + BuildKit ---
+          # deps for JSON parsing
+          sudo yum install -y jq
+
+          # Map kernel arch to release arch names
+          ARCH="$(uname -m)"
+          case "$ARCH" in
+            x86_64) ARCH="amd64" ;;
+            aarch64) ARCH="arm64" ;;
+          esac
+
+          # Find latest Buildx version and download correct asset
+          BUILDX_VERSION="$(curl -fsSL https://api.github.com/repos/docker/buildx/releases/latest | jq -r .tag_name)"
+          BUILDX_URL="https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.linux-${ARCH}"
+
+          sudo mkdir -p /usr/local/lib/docker/cli-plugins
           curl -fsSL "$BUILDX_URL" \
-            | sudo tee /usr/local/lib/docker/cli-plugins/docker-buildx >/dev/null
+            | sudo tee /usr/local/lib/docker/cli-plugins/docker-buildx >/dev/null || {
+              echo "Falling back to a pinned version..."
+              BUILDX_VERSION="v0.16.2"
+              BUILDX_URL="https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.linux-${ARCH}"
+              curl -fsSL "$BUILDX_URL" \
+                | sudo tee /usr/local/lib/docker/cli-plugins/docker-buildx >/dev/null
+            }
           sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
 
-          # Enable BuildKit in the Docker daemon
-          # (Overwrites daemon.json; adjust if you maintain other daemon settings.)
+          # Enable BuildKit in Docker daemon
           echo '{"features":{"buildkit": true}}' | sudo tee /etc/docker/daemon.json >/dev/null
           sudo systemctl restart docker
 
@@ -81,8 +99,9 @@ jobs:
           cd /home/ec2-user/api
           echo "${{ secrets.DOT_ENV }}" > .env
 
-          # Build with BuildKit/Buildx in place, then start
           docker compose build
           docker compose down || true
           docker compose up -d
+          EOF
+
           EOF

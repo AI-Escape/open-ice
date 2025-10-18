@@ -41,20 +41,36 @@ jobs:
       - name: Copy files to EC2
         run: |
           scp -o StrictHostKeyChecking=no -r * ec2-user@$EC2_INSTANCE:/home/ec2-user/api/
-
       - name: Deploy Docker Compose
         run: |
           ssh -o StrictHostKeyChecking=no ec2-user@$EC2_INSTANCE << 'EOF'
+          set -euo pipefail
+
+          # Docker engine (already present, but keep idempotent)
           sudo yum update -y
-          sudo amazon-linux-extras install docker -y
-          sudo service docker start
+          sudo amazon-linux-extras install docker -y || true
+          sudo systemctl enable docker
+          sudo systemctl start docker
+
+          # Add ec2-user to docker group for future logins (not needed for this script since we use sudo)
           sudo usermod -aG docker ec2-user
-          newgrp docker
-          sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          sudo systemctl restart docker
+
+          # Install Docker Compose v2 as a CLI plugin
+          sudo mkdir -p /usr/local/lib/docker/cli-plugins
+          # Use the latest Compose v2 plugin for your arch (aarch64 on Graviton)
+          sudo curl -fL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" \
+            -o /usr/local/lib/docker/cli-plugins/docker-compose
+          sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+          # Verify versions
+          sudo docker version
+          sudo docker compose version
+
+          # Deploy
           cd /home/ec2-user/api/
           echo "${{ secrets.DOT_ENV }}" > .env
-          docker-compose down
-          docker-compose up -d --build
+
+          # Use Compose v2 syntax (note: 'docker compose', not 'docker-compose')
+          sudo docker compose down || true
+          sudo docker compose up -d --build
           EOF

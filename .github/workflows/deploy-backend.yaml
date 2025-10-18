@@ -41,36 +41,48 @@ jobs:
       - name: Copy files to EC2
         run: |
           scp -o StrictHostKeyChecking=no -r * ec2-user@$EC2_INSTANCE:/home/ec2-user/api/
+      
       - name: Deploy Docker Compose
         run: |
           ssh -o StrictHostKeyChecking=no ec2-user@$EC2_INSTANCE << 'EOF'
           set -euo pipefail
 
-          # Docker engine (already present, but keep idempotent)
+          # --- Docker engine & compose plugin ---
           sudo yum update -y
           sudo amazon-linux-extras install docker -y || true
           sudo systemctl enable docker
           sudo systemctl start docker
-
-          # Add ec2-user to docker group for future logins (not needed for this script since we use sudo)
           sudo usermod -aG docker ec2-user
 
-          # Install Docker Compose v2 as a CLI plugin
+          # Compose v2 plugin (idempotent)
           sudo mkdir -p /usr/local/lib/docker/cli-plugins
-          # Use the latest Compose v2 plugin for your arch (aarch64 on Graviton)
-          sudo curl -fL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" \
-            -o /usr/local/lib/docker/cli-plugins/docker-compose
+          curl -fsSL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-$(uname -m)" \
+            | sudo tee /usr/local/lib/docker/cli-plugins/docker-compose >/dev/null
           sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
-          # Verify versions
-          sudo docker version
-          sudo docker compose version
+          # --- Buildx + BuildKit (fixes the 'unknown flag: --allow') ---
+          # Install/upgrade Buildx plugin explicitly (idempotent)
+          BUILDX_URL="https://github.com/docker/buildx/releases/latest/download/buildx-linux-$(uname -m)"
+          curl -fsSL "$BUILDX_URL" \
+            | sudo tee /usr/local/lib/docker/cli-plugins/docker-buildx >/dev/null
+          sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
 
-          # Deploy
-          cd /home/ec2-user/api/
+          # Enable BuildKit in the Docker daemon
+          # (Overwrites daemon.json; adjust if you maintain other daemon settings.)
+          echo '{"features":{"buildkit": true}}' | sudo tee /etc/docker/daemon.json >/dev/null
+          sudo systemctl restart docker
+
+          # Initialize/activate a Buildx builder
+          docker buildx version || true
+          docker buildx create --name ec2builder --use >/dev/null 2>&1 || docker buildx use ec2builder
+          docker buildx inspect --bootstrap >/dev/null
+
+          # --- Deploy app ---
+          cd /home/ec2-user/api
           echo "${{ secrets.DOT_ENV }}" > .env
 
-          # Use Compose v2 syntax (note: 'docker compose', not 'docker-compose')
-          sudo docker compose down || true
-          sudo docker compose up -d --build
+          # Build with BuildKit/Buildx in place, then start
+          docker compose build
+          docker compose down || true
+          docker compose up -d
           EOF

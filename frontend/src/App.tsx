@@ -100,9 +100,9 @@ function AppWithUserContext() {
         api_host: 'https://ph.openice.org',
         ui_host: 'https://us.posthog.com',
         defaults: '2025-05-24',
-        autocapture: process.env.ENVIRONMENT !== 'development',
+        autocapture: import.meta.env.MODE !== 'development',
         loaded: (ph) => {
-          if (process.env.ENVIRONMENT === 'development') {
+          if (import.meta.env.MODE === 'development') {
             ph.opt_out_capturing(); // opts a user out of event capture
             ph.set_config({ disable_session_recording: true });
           }

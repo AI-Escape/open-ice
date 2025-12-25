@@ -1,5 +1,6 @@
 from pandas import DataFrame
 from sqlmodel import SQLModel
+import pandas as pd
 from app.loaders.common import ICEDataLoader, month_end_for_fy
 from app.models import BookIn, DetentionStatsReport
 
@@ -23,7 +24,10 @@ class BookInLoader(ICEDataLoader):
             agency = row["Agency"]
 
             for month in df.columns[1:]:
-                bookings = int(row[month])
+                if pd.isna(row[month]) or row[month] is None:
+                    bookings = 0
+                else:
+                    bookings = int(row[month])
                 stat_range = "month"
 
                 if month == "Total":

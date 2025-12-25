@@ -29,9 +29,10 @@ Each directory has its own README with setup details.
 
 ### Frontend (React/TypeScript)
 
-- Package manager is `yarn`, be sure to install dependencies with `yarn install` before development
+- Package manager is `npm`, be sure to install dependencies with `npm install` before development
+- Build tool is Vite with React Compiler enabled
 - Use the Prettier rules in `.prettierrc` (single quotes, trailing commas, width 100)
-- ESLint configuration lives in `.eslintrc`
+- ESLint configuration lives in `eslint.config.js` (flat config format)
 - Components are written in TypeScript using React hooks
 - Explicitly define the types for all props and state in the component
 - Prefer named function exports for React components instead of `React.FC`.

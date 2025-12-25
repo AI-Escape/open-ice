@@ -1,20 +1,15 @@
 from fastapi import APIRouter, Depends, Request, Response
-from sqlalchemy import func
 from sqlmodel import select
-from sqlalchemy.orm import selectinload
-from urllib3 import HTTPResponse
 from app.db import get_session
 from app.limits import limiter
 from sqlmodel.ext.asyncio.session import AsyncSession
-from starlette.status import HTTP_304_NOT_MODIFIED
 
 from app.models import (
     BookIn,
     BookInRead,
-    DetentionStatsReport,
 )
 from app.utils.cache import cache_headers
-from app.services.reports import current_report_subquery
+from app.services.reports import merged_booking_subquery
 
 
 router = APIRouter(
@@ -31,23 +26,8 @@ async def current(
     response: Response,
     session: AsyncSession = Depends(get_session),
 ) -> list[BookInRead]:
-    sub_query = current_report_subquery()
-    query = (
-        select(BookIn)
-        .join(
-            DetentionStatsReport,
-            BookIn.report_id == DetentionStatsReport.id,
-        )
-        .join(
-            sub_query,
-            BookIn.report_id == sub_query.c.id,
-        )
-        .where(
-            BookIn.incomplete == False,
-            BookIn.started == True,
-            BookIn.range == "month",
-        )
-    )
+    sub_query = merged_booking_subquery()
+    query = select(BookIn).where(BookIn.id.in_(select(sub_query.c.id)))
     results = await session.exec(query)
     items = results.all()
 

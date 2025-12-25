@@ -8,8 +8,6 @@ on:
 
 env:
   S3_BUCKET: ${{ secrets.S3_BUCKET }}
-  # Disable failing on eslint warnings in GitHub actions
-  CI: false
 
 permissions:
   contents: read
@@ -22,21 +20,21 @@ jobs:
         working-directory: frontend
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: "20"
-
-      - name: Install Yarn
-        run: npm install -g yarn
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
-        run: yarn install
+        run: npm ci --legacy-peer-deps
+
       # TODO serve sourcemaps to posthog, see https://posthog.com/docs/error-tracking/installation?tab=React
       - name: Build project
-        run: yarn build
+        run: npm run build
 
       - name: Deploy to S3
         env:

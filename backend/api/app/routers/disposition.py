@@ -1,8 +1,5 @@
 from fastapi import APIRouter, Depends, Request, Response
-from sqlalchemy import func
 from sqlmodel import select
-from sqlalchemy.orm import selectinload
-from urllib3 import HTTPResponse
 from app.db import get_session
 from app.limits import limiter
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -30,6 +27,7 @@ async def current(
     response: Response,
     session: AsyncSession = Depends(get_session),
 ) -> list[ProcessingDispositionRead]:
+    # Disposition is point-in-time data, use latest report only
     sub_query = current_report_subquery()
     query = (
         select(ProcessingDisposition)

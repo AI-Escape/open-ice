@@ -1,8 +1,5 @@
 from fastapi import APIRouter, Depends, Request, Response
-from sqlalchemy import func
 from sqlmodel import select
-from sqlalchemy.orm import selectinload
-from urllib3 import HTTPResponse
 from app.db import get_session
 from app.limits import limiter
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -10,10 +7,9 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.models import (
     AverageStayLength,
     AverageStayLengthRead,
-    DetentionStatsReport,
 )
 from app.utils.cache import cache_headers
-from app.services.reports import current_report_subquery
+from app.services.reports import merged_stay_subquery
 
 
 router = APIRouter(
@@ -30,22 +26,9 @@ async def current(
     response: Response,
     session: AsyncSession = Depends(get_session),
 ) -> list[AverageStayLengthRead]:
-    sub_query = current_report_subquery()
-    query = (
-        select(AverageStayLength)
-        .join(
-            DetentionStatsReport,
-            AverageStayLength.report_id == DetentionStatsReport.id,
-        )
-        .join(
-            sub_query,
-            AverageStayLength.report_id == sub_query.c.id,
-        )
-        .where(
-            AverageStayLength.incomplete == False,
-            AverageStayLength.started == True,
-            AverageStayLength.range == "month",
-        )
+    sub_query = merged_stay_subquery()
+    query = select(AverageStayLength).where(
+        AverageStayLength.id.in_(select(sub_query.c.id))
     )
     results = await session.exec(query)
     items = results.all()

@@ -38,11 +38,15 @@ class FacilitiesLoader(ICEDataLoader):
             sheet_name=f"Facilities FY{fy[-2:]}",
             sheet_skip_rows=[1, 2, 3, 5, 6],
         )
+        self.fy = fy
 
     def load(self, df: DataFrame, report: DetentionStatsReport) -> list[SQLModel]:
         items: list[SQLModel] = []
 
         for _, row in df.iterrows():
+            alos = _to_float(row[f"FY{self.fy[-2:]} ALOS"])
+            if alos is None:
+                alos = 0
             items.append(
                 Facility(
                     report=report,
@@ -54,7 +58,7 @@ class FacilitiesLoader(ICEDataLoader):
                     aor=row["AOR"],
                     type_detailed=row["Type Detailed"],
                     gender=row["Male/Female"],
-                    fy25_alos=_to_float(row["FY25 ALOS"]),
+                    fy25_alos=alos,
                     level_a=_to_float(row["Level A"]),
                     level_b=_to_float(row["Level B"]),
                     level_c=_to_float(row["Level C"]),
@@ -73,7 +77,7 @@ class FacilitiesLoader(ICEDataLoader):
                     last_inspection_end_date=_excel_to_datetime(
                         row["Last Inspection End Date"]
                     ),
-                    pending_fy25_inspection=row["Pending FY25 Inspection"],
+                    # pending_fy25_inspection=row[f"Pending FY{self.fy[-2:]} Inspection"],
                     last_inspection_standard=row["Last Inspection Standard"],
                     last_final_rating=row["Last Final Rating"],
                 )

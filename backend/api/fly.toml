@@ -6,7 +6,6 @@ primary_region = 'sjc'  # San Jose - close to us-west-2
 
 [build]
   dockerfile = 'Dockerfile'
-  context = 'api'
 
 [env]
   ENVIRONMENT = 'production'
@@ -18,7 +17,6 @@ primary_region = 'sjc'  # San Jose - close to us-west-2
   force_https = true
   auto_stop_machines = 'suspend'      # Suspend when idle (but keep min running)
   auto_start_machines = true       # Wake on request
-  min_machines_running = 1         # Keep at least 1 machine running
   processes = ['app']
 
 [[http_service.checks]]
@@ -32,4 +30,3 @@ primary_region = 'sjc'  # San Jose - close to us-west-2
   memory = '512mb'
   cpu_kind = 'shared'
   cpus = 1
-

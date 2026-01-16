@@ -5,7 +5,7 @@ app = 'open-ice-api'
 primary_region = 'sjc'  # San Jose - close to us-west-2
 
 [build]
-  dockerfile = 'api/Dockerfile'
+  dockerfile = 'Dockerfile'
   context = 'api'
 
 [env]

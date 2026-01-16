@@ -9,17 +9,3 @@ services:
       - ./api:/usr/src/app
     ports:
       - "80:80"
-  worker:
-    image: openice-api
-    env_file: .env
-    command: python3.13 -m app.worker
-    restart: always
-    volumes:
-      - ./api:/usr/src/app
-  scheduler:
-    image: openice-api
-    env_file: .env
-    command: python3.13 -m app.scheduler
-    restart: always
-    volumes:
-      - ./api:/usr/src/app

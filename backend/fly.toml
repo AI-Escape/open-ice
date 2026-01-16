@@ -1,0 +1,35 @@
+# Fly.io configuration for OpenICE API
+# See https://fly.io/docs/reference/configuration/
+
+app = 'open-ice-api'
+primary_region = 'sjc'  # San Jose - close to us-west-2
+
+[build]
+  dockerfile = 'api/Dockerfile'
+  context = 'api'
+
+[env]
+  ENVIRONMENT = 'production'
+  LOG_LEVEL = 'info'
+  INNGEST_DEV = '0'
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = 'suspend'      # Suspend when idle (but keep min running)
+  auto_start_machines = true       # Wake on request
+  min_machines_running = 1         # Keep at least 1 machine running
+  processes = ['app']
+
+[[http_service.checks]]
+  grace_period = '10s'
+  interval = '30s'
+  method = 'HEAD'
+  timeout = '5s'
+  path = '/status/is-alive'
+
+[[vm]]
+  memory = '512mb'
+  cpu_kind = 'shared'
+  cpus = 1
+

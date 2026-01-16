@@ -21,3 +21,8 @@ RUN uv pip install --system --no-cache -r requirements.txt
 
 # Copy application code
 COPY . .
+
+EXPOSE 8000
+
+# Default command (can be overridden in docker-compose)
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

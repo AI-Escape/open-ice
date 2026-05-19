@@ -31,7 +31,18 @@ Each subdirectory provides its own `README.md` with detailed setup instructions.
 
 Contributions are welcome! Feel free to open issues or submit pull requests. By participating in this project you agree to abide by the code of conduct defined in the individual directories.
 
+## Production Releases
+
+Production deploy workflows publish canonical GitHub Releases only after a
+production deploy succeeds. The release tag is `prod-<full commit SHA>`, so
+rerunning the same deploy updates the existing release instead of creating a
+duplicate.
+
+Each release records the deployed production SHA, the service URL, the GitHub
+Actions run URL, and deploy notes for each service that deployed from that
+commit. Historical releases are not backfilled unless the production
+SHA-to-deploy mapping is unambiguous under this policy.
+
 ## License
 
 This project is licensed under the [Apache License 2.0](LICENSE). All code is open‑source. No public funds were used in its development.
-

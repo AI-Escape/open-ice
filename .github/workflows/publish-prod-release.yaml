@@ -1,0 +1,38 @@
+name: Publish Production Release
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        description: Production service that was deployed.
+        required: true
+        type: string
+      service_url:
+        description: Public production URL for the deployed service.
+        required: true
+        type: string
+      deploy_notes:
+        description: Notes describing the production deploy.
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: prod-release-${{ github.sha }}
+      cancel-in-progress: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Upsert production release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SERVICE_NAME: ${{ inputs.service_name }}
+          SERVICE_URL: ${{ inputs.service_url }}
+          DEPLOY_NOTES: ${{ inputs.deploy_notes }}
+        run: .github/scripts/upsert-prod-release.sh

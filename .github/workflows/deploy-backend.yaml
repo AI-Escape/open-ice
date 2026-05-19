@@ -29,3 +29,14 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: flyctl deploy --remote-only
+
+  publish-release:
+    needs: deploy
+    if: ${{ success() }}
+    uses: ./.github/workflows/publish-prod-release.yaml
+    permissions:
+      contents: write
+    with:
+      service_name: Backend API
+      service_url: https://open-ice-api.fly.dev
+      deploy_notes: Fly.io production API deploy from backend/api using flyctl deploy --remote-only.

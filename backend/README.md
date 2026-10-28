@@ -63,9 +63,15 @@ docker-compose exec web alembic upgrade head
 ### 5. Import data
 
 ```bash
-# Run the data import script
-docker-compose exec web python3.13 -m app.scripts.import_data --file_path app/files/data/FY25_detentionStats08292025.xlsx
+# Validate the latest report without accessing the database
+docker-compose exec web python3.13 -m app.scripts.import_data --file_path app/files/data/FY26_detentionStats07202026.xlsx --dry-run
+
+# Import all six tables in one transaction
+docker-compose exec web python3.13 -m app.scripts.import_data --file_path app/files/data/FY26_detentionStats07202026.xlsx
 ```
+
+Reports already imported under the same filename are skipped. Source workbooks
+are published on [ICE's detention management page](https://www.ice.gov/detain/detention-management).
 
 ## Development
 

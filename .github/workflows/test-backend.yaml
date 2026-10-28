@@ -1,0 +1,30 @@
+name: Test Backend
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/test-backend.yaml'
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/test-backend.yaml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: backend/api/requirements.txt
+      - run: pip install -r requirements.txt
+      - run: python -m unittest discover -s tests -p 'test_*.py'

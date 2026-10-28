@@ -18,23 +18,11 @@ def current_report_subquery():
     """
     return (
         select(DetentionStatsReport.id)
-        .select_from(
-            select(
-                DetentionStatsReport.id,
-                DetentionStatsReport.publication_date,
-                func.row_number()
-                .over(
-                    order_by=[
-                        DetentionStatsReport.publication_date.desc(),
-                        DetentionStatsReport.id.desc(),
-                    ]
-                )
-                .label("rn"),
-            )
-            .select_from(DetentionStatsReport)
-            .subquery()
+        .order_by(
+            DetentionStatsReport.publication_date.desc(),
+            DetentionStatsReport.id.desc(),
         )
-        .where(text("rn = 1"))
+        .limit(1)
         .subquery()
     )
 

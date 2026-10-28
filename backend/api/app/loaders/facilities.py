@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 import math
 from pandas import DataFrame
 from sqlmodel import SQLModel
@@ -7,12 +7,15 @@ from app.loaders.common import ICEDataLoader
 from app.models import DetentionStatsReport, Facility
 
 
-def _excel_to_datetime(value: float | int | str | None):
+def _excel_to_datetime(
+    value: float | int | str | datetime | None,
+) -> datetime | None:
     if value in (None, ""):
         return None
+    if isinstance(value, datetime):
+        return value
     try:
-        # format is YYYY-MM-DD
-        return datetime.strptime(value, "%Y-%m-%d")
+        return datetime.fromisoformat(value)
     except (TypeError, ValueError):
         return None
 
@@ -40,7 +43,9 @@ class FacilitiesLoader(ICEDataLoader):
         )
         self.fy = fy
 
-    def load(self, df: DataFrame, report: DetentionStatsReport) -> list[SQLModel]:
+    def load(
+        self, df: DataFrame, report: DetentionStatsReport
+    ) -> list[SQLModel]:
         items: list[SQLModel] = []
 
         for _, row in df.iterrows():

@@ -2,10 +2,10 @@ import asyncio
 import argparse
 from collections import defaultdict
 from datetime import datetime
-import httpx
 import logging
 import os
 from dotenv import load_dotenv
+from sqlmodel import SQLModel, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.db import init_db, session_context
@@ -14,17 +14,29 @@ from app.models import DetentionStatsReport
 from app.services.excel import convert_to_df_dict, extract_tables
 from app.loaders.common import ICEDataLoader
 
-
 logger = logging.getLogger("openice.import-data")
 logger.setLevel(logging.INFO)
 
 
-async def import_data(file_path: str, session: AsyncSession):
+async def import_data(
+    file_path: str, session: AsyncSession | None = None
+) -> dict[str, int]:
+    """Load every table before saving; omit the session to validate only."""
+    source_name = os.path.basename(file_path)
+    if session is not None:
+        existing = await session.exec(
+            select(DetentionStatsReport).where(
+                DetentionStatsReport.source_name == source_name
+            )
+        )
+        if existing.first() is not None:
+            logger.info("Report %s is already imported; skipping", source_name)
+            return {}
+
     logger.info("Extracting tables...")
     with open(file_path, "rb") as file:
         raw_bytes = file.read()
 
-    source_name = os.path.basename(file_path)
     file_name, file_extension = os.path.splitext(source_name)
     start_part, end_part = file_name.split("_")
     fiscal_year = start_part
@@ -49,9 +61,9 @@ async def import_data(file_path: str, session: AsyncSession):
         publication_year=publication_year,
         raw_bytes=raw_bytes,
     )
-    session.add(report)
-
     all_loaders = get_loaders(fiscal_year)
+    counts: dict[str, int] = {}
+    all_items: list[SQLModel] = []
     # group loaders by sheet name
     loaders_by_sheet: dict[str, list[ICEDataLoader]] = defaultdict(list)
     for loader in all_loaders:
@@ -74,18 +86,33 @@ async def import_data(file_path: str, session: AsyncSession):
         )
         for loader in sheet_loaders:
             logger.info(f"Loading {loader.name}...")
-            df = data[loader.title]
+            title = loader.title
+            # Newer workbooks give the facility table its own heading.
+            if loader.name == "facilities" and "Facility Information" in data:
+                title = "Facility Information"
+            df = data[title]
+            if df.empty:
+                raise ValueError(f"No rows found for {loader.name}")
             items = loader.load(df, report)
-            session.add_all(items)
-            await session.commit()
-            for item in items:
-                await session.refresh(item)
+            all_items.extend(items)
+            counts[loader.name] = len(items)
             logger.info(f"Loaded {len(items)} items for {loader.name}")
         logger.info(f"Completed {sheet_name}")
-    logger.info("Data import completed")
+
+    if session is not None:
+        session.add(report)
+        session.add_all(all_items)
+        await session.commit()
+        logger.info("Data import completed")
+    else:
+        logger.info("Validation completed; no database writes")
+    return counts
 
 
-async def main(file_path: str):
+async def main(file_path: str, dry_run: bool = False):
+    if dry_run:
+        await import_data(file_path)
+        return
     logger.info("Initializing database...")
     await init_db()
     async with session_context() as session:
@@ -96,10 +123,15 @@ if __name__ == "__main__":
     load_dotenv()
     parser = argparse.ArgumentParser()
     parser.add_argument("--file_path", type=str, required=True)
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate without database access",
+    )
     args = parser.parse_args()
 
     logger.info("Starting data import...")
     try:
-        asyncio.run(main(args.file_path))
+        asyncio.run(main(args.file_path, args.dry_run))
     except KeyboardInterrupt:
         logger.info("Data import stopped.")
